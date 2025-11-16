@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login - EVENT NEST</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    .login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .login-container {
+      width: 100%;
+      max-width: 480px;
+      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
+      backdrop-filter: blur(10px) saturate(120%);
+      -webkit-backdrop-filter: blur(10px) saturate(120%);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,.35);
+    }
+    .login-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .login-header h1 {
+      font-size: clamp(1.8rem, 4vw, 2.4rem);
+      margin: 0 0 0.5rem 0;
+      background: linear-gradient(90deg, #FF69B4, #BF00FF, #FFD700);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .login-header p {
+      color: var(--muted);
+      margin: 0;
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 1rem;
+      color: var(--soft-pink);
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Page-specific overrides to match EventNest login card design */
+    .login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1rem;
+    }
+
+    .login-container {
+      max-width: 420px;
+      padding: 2.5rem 2.25rem;
+      border-radius: 24px;
+      background:
+        radial-gradient(140% 160% at 10% 0%, rgba(0, 210, 255, 0.18), transparent 45%),
+        radial-gradient(120% 180% at 100% 0%, rgba(108, 99, 255, 0.22), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: 0 28px 60px rgba(0,0,0,.6);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 1.75rem;
+    }
+
+    .login-card-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      margin: 0 auto 1.1rem;
+      background: radial-gradient(circle at 20% 0%, rgba(0,210,255,.85), rgba(108,99,255,1));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 14px 30px rgba(0,0,0,.6);
+    }
+
+    .login-card-icon span {
+      font-size: 1.8rem;
+    }
+
+    .login-header h1 {
+      font-size: clamp(1.9rem, 4.5vw, 2.5rem);
+      margin: 0 0 0.4rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      background: linear-gradient(90deg, #2EE6FF, #46A0FF, #00D2FF);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .login-header p {
+      margin: 0;
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    .login-header .login-subtitle {
+      display: inline-block;
+      margin-top: 0.25rem;
+      font-weight: 600;
+      color: var(--soft-pink);
+    }
+
+    .role-hint {
+      margin: 0 0 1.2rem 0;
+      text-align: center;
+      font-size: 0; /* hide plain 'Role:' text, show only pill button */
+    }
+
+    .role-hint .role-toggle {
+      border: 0;
+      border-radius: 999px;
+      padding: 0.45rem 1.2rem;
+      background: radial-gradient(circle at 0% 0%, rgba(0, 210, 255, 0.95), rgba(0, 120, 200, 1));
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.75);
+    }
+
+    .role-hint .role-toggle::before {
+      content: '\21C4'; /* left-right arrow symbol */
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    .login-select-dd h3 {
+      margin-top: 1.2rem;
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-hint);
+    }
+
+    .role-actions {
+      margin-top: 1.4rem;
+    }
+
+    .role-actions .btn {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 1.4rem 1.2rem;
+      border-radius: 18px;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      gap: 0.3rem;
+    }
+
+    .role-actions .btn span.label {
+      font-size: 0.85rem;
+      font-weight: 400;
+      color: var(--muted);
+      text-transform: none;
+    }
+
+    .back-link {
+      margin-bottom: 1.5rem;
+      font-weight: 500;
+    }
+
+    /* Auth tabs - pill style with glow */
+    .auth-modes {
+      display: flex;
+      gap: 0;
+      padding: 0.25rem;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 210, 255, 0.35);
+      background: rgba(0, 0, 0, 0.55);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.7);
+    }
+
+    .auth-tab {
+      flex: 1 1 0;
+      border-radius: 999px;
+      padding: 0.55rem 0.9rem;
+      border: 0;
+      background: transparent;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .auth-tab .tab-icon {
+      font-size: 1rem;
+    }
+
+    .auth-tab.active {
+      background: radial-gradient(circle at 0% 0%, rgba(0, 210, 255, 0.95), rgba(0, 120, 200, 1));
+      color: #ffffff;
+      box-shadow:
+        0 0 0 1px rgba(0, 210, 255, 0.7),
+        0 14px 32px rgba(0, 0, 0, 0.9);
+    }
+
+    /* Role tiles with icons */
+    .role-actions {
+      margin-top: 1.6rem;
+      gap: 0.9rem;
+    }
+
+    .role-actions .btn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .role-actions .role-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.45rem;
+      background: rgba(0, 0, 0, 0.42);
+      font-size: 1.4rem;
+    }
+
+    .role-actions .role-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    /* Google button styling */
+    .google-btn {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      padding: 0.7rem 1.2rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(0, 0, 0, 0.75);
+      color: #f5f5f5;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+    }
+
+    .google-btn:hover {
+      background: rgba(255, 255, 255, 0.04);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .google-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .google-icon svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+
+    .google-label {
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="login-page">
+    <div class="login-container">
+      <a href="index.html" class="back-link">← Back to Home</a>
+
+      <div class="login-header">
+        <div class="login-card-icon"><span>📅</span></div>
+        <h1>EVENT NEST</h1>
+        <p>
+          Nesting Ideas · Crafting Experience<br>
+          <span class="login-subtitle">By &lt;CodeInc&gt;</span>
+        </p>
+      </div>
+
+      <div class="login-select-dd" id="login-select">
+        <div class="auth-modes" role="tablist" aria-label="Auth Modes">
+          <button class="auth-tab active" data-auth-mode="login" role="tab" aria-selected="true">
+            <span class="tab-icon">🔑</span>
+            <span>Login</span>
+          </button>
+          <button class="auth-tab" data-auth-mode="signup" role="tab" aria-selected="false">
+            <span class="tab-icon">👤</span>
+            <span>Sign Up</span>
+          </button>
+        </div>
+        <h3>Choose Your Role</h3>
+        <div class="role-actions">
+          <button class="btn btn-primary" data-role="organizer">
+            <span class="role-icon">💼</span>
+            <span class="role-title">Organizer</span>
+            <span class="label">Create &amp; Manage Events</span>
+          </button>
+          <button class="btn btn-secondary" data-role="participant">
+            <span class="role-icon">👥</span>
+            <span class="role-title">Participant</span>
+            <span class="label">Join &amp; Attend Events</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script
+    async
+    crossorigin="anonymous"
+    data-clerk-publishable-key="pk_test_a25vd24ta29pLTYyLmNsZXJrLmFjY291bnRzLmRldiQ"
+    src="https://known-koi-62.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+    type="text/javascript"
+  ></script>
+
+  <script src="auth.js"></script>
+  <script src="login.js"></script>
+</body>
+</html>

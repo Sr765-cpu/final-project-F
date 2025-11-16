@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login – EVENT NEST</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    .login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1rem;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+      padding: 2.5rem 2.25rem;
+      border-radius: 24px;
+      background:
+        radial-gradient(140% 160% at 10% 0%, rgba(0, 210, 255, 0.18), transparent 45%),
+        radial-gradient(120% 180% at 100% 0%, rgba(108, 99, 255, 0.22), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: 0 28px 60px rgba(0,0,0,.6);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 1.5rem;
+      color: var(--soft-pink);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .login-card-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      margin: 0 auto 1.1rem;
+      background: radial-gradient(circle at 20% 0%, rgba(0,210,255,.85), rgba(108,99,255,1));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 14px 30px rgba(0,0,0,.6);
+    }
+
+    .login-card-icon span {
+      font-size: 1.8rem;
+    }
+
+    .login-header h1 {
+      font-size: clamp(1.9rem, 4.5vw, 2.5rem);
+      margin: 0 0 0.4rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      background: linear-gradient(90deg, #2EE6FF, #46A0FF, #00D2FF);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .login-header p {
+      margin: 0;
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    .login-header .login-subtitle {
+      display: inline-block;
+      margin-top: 0.25rem;
+      font-weight: 600;
+      color: var(--soft-pink);
+    }
+
+    /* Auth tabs - pill style with glow */
+    .auth-modes {
+      display: flex;
+      gap: 0;
+      padding: 0.25rem;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 210, 255, 0.35);
+      background: rgba(0, 0, 0, 0.55);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.7);
+      margin-bottom: 1.5rem;
+    }
+
+    .auth-tab {
+      flex: 1 1 0;
+      border-radius: 999px;
+      padding: 0.55rem 0.9rem;
+      border: 0;
+      background: transparent;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .auth-tab .tab-icon {
+      font-size: 1rem;
+    }
+
+    .auth-tab.active {
+      background: radial-gradient(circle at 0% 0%, rgba(0, 210, 255, 0.95), rgba(0, 120, 200, 1));
+      color: #ffffff;
+      box-shadow:
+        0 0 0 1px rgba(0, 210, 255, 0.7),
+        0 14px 32px rgba(0, 0, 0, 0.9);
+    }
+
+    .role-hint {
+      margin: 0 0 1.2rem 0;
+      text-align: center;
+      font-size: 0;
+    }
+
+    .role-hint .role-toggle {
+      border: 0;
+      border-radius: 999px;
+      padding: 0.45rem 1.2rem;
+      background: radial-gradient(circle at 0% 0%, rgba(0, 210, 255, 0.95), rgba(0, 120, 200, 1));
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.75);
+    }
+
+    .role-hint .role-toggle::before {
+      content: '\21C4';
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    /* Google button styling */
+    .google-btn {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      padding: 0.7rem 1.2rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(0, 0, 0, 0.75);
+      color: #f5f5f5;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+    }
+
+    .google-btn:hover {
+      background: rgba(255, 255, 255, 0.04);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .google-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .google-icon svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+
+    .google-label {
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="login-page">
+    <div class="login-container">
+      <a href="index.html" class="back-link">← Back to Home</a>
+
+      <div class="login-header">
+        <div class="login-card-icon"><span>📅</span></div>
+        <h1>EVENT NEST</h1>
+        <p>
+          Nesting Ideas · Crafting Experience<br>
+          <span class="login-subtitle">By &lt;CodeInc&gt;</span>
+        </p>
+      </div>
+
+      <div class="auth-modes" role="tablist" aria-label="Auth Modes">
+        <button class="auth-tab active" data-auth-mode="login" role="tab" aria-selected="true">
+          <span class="tab-icon">🔑</span>
+          <span>Login</span>
+        </button>
+        <button class="auth-tab" data-auth-mode="signup" role="tab" aria-selected="false">
+          <span class="tab-icon">👤</span>
+          <span>Sign Up</span>
+        </button>
+      </div>
+
+      <form class="login-form" id="login-form" novalidate>
+        <p class="role-hint">Role: <button type="button" class="role-toggle" id="role-toggle"><span id="role-label">Organizer</span></button></p>
+
+        <div id="signup-only" class="signup-only" hidden>
+          <div class="field">
+            <label for="name">Full Name</label>
+            <input id="name" name="name" type="text" placeholder="Enter your full name">
+          </div>
+          <div class="field">
+            <label for="address">Address</label>
+            <input id="address" name="address" type="text" placeholder="Enter your address">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="email">Email Address</label>
+          <input id="email" name="email" type="email" required placeholder="Enter your email">
+        </div>
+
+        <div class="field password-field">
+          <label for="password">Password</label>
+          <div class="password-wrap">
+            <input id="password" name="password" type="password" required minlength="8" placeholder="Enter your password">
+            <button type="button" class="pw-toggle" id="pw-toggle" aria-label="Show password">👁️</button>
+          </div>
+          <small style="color: var(--muted); font-size: 0.85rem;" id="password-hint">For signup: Min 8 chars, uppercase, lowercase, number</small>
+        </div>
+
+        <div class="login-row">
+          <label class="remember"><input type="checkbox" id="remember"> Remember me</label>
+          <a class="forgot" href="#">Forgot password?</a>
+        </div>
+
+        <div class="divider"><span>Or continue with</span></div>
+        <button type="button" class="google-btn" id="google-btn">
+          <span class="google-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.2-.9 2.3-2 3.1l3.2 2.5c1.9-1.8 3-4.5 3-7.6 0-.7-.1-1.4-.2-2H12z"/>
+              <path fill="#34A853" d="M6.6 14.3l-.8.6-2.6 2c1.6 3.1 4.7 5.1 8.8 5.1 2.7 0 5-.9 6.6-2.5l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.7-5.6-4.1z"/>
+              <path fill="#FBBC05" d="M3.2 8.9C2.8 10 2.6 11.1 2.6 12.3c0 1.2.2 2.3.6 3.4l3.9-3c-.2-.6-.3-1.2-.3-1.8 0-.6.1-1.2.3-1.8z"/>
+              <path fill="#4285F4" d="M12 4.8c1.5 0 2.8.5 3.9 1.5l2.9-2.9C17 1.9 14.7 1 12 1 7.9 1 4.8 3 3.2 6.1l3.9 3C7.2 6.5 9.4 4.8 12 4.8z"/>
+              <path fill="none" d="M2.6 2.6h18.8v18.8H2.6z"/>
+            </svg>
+          </span>
+          <span class="google-label">Continue with Google</span>
+        </button>
+
+        <p class="switch-auth" id="switch-auth-text">New to EventNest? <button type="button" class="link" id="go-signup">Create Account</button></p>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" id="back-to-select">Back</button>
+          <button type="submit" class="btn btn-primary" id="submit-btn">Continue</button>
+        </div>
+
+        <div class="switch-role-wrap">
+          <button type="button" class="btn btn-secondary wide" id="switch-role-btn">Switch Role (Organizer ⇄ Participant)</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script
+    async
+    crossorigin="anonymous"
+    data-clerk-publishable-key="pk_test_a25vd24ta29pLTYyLmNsZXJrLmFjY291bnRzLmRldiQ"
+    src="https://known-koi-62.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+    type="text/javascript"
+  ></script>
+
+  <script src="auth.js"></script>
+  <script src="login.js"></script>
+</body>
+</html>

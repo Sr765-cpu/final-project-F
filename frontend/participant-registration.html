@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Participant Registration – EVENT NEST</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1rem;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 460px;
+      padding: 2.5rem 2.25rem;
+      border-radius: 24px;
+      background:
+        radial-gradient(140% 160% at 10% 0%, rgba(0, 210, 255, 0.18), transparent 45%),
+        radial-gradient(120% 180% at 100% 0%, rgba(108, 99, 255, 0.22), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: 0 28px 60px rgba(0,0,0,.6);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 1.5rem;
+      color: var(--soft-pink);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .login-card-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      margin: 0 auto 1.1rem;
+      background: radial-gradient(circle at 20% 0%, rgba(0,210,255,.85), rgba(108,99,255,1));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 14px 30px rgba(0,0,0,.6);
+    }
+
+    .login-card-icon span {
+      font-size: 1.8rem;
+    }
+
+    .login-header h1 {
+      font-size: clamp(1.9rem, 4.5vw, 2.5rem);
+      margin: 0 0 0.4rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      background: linear-gradient(90deg, #2EE6FF, #46A0FF, #00D2FF);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .login-header p {
+      margin: 0;
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    /* Accordion-style sections inside the registration card */
+    .form-section {
+      margin-bottom: 1rem;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(24,16,29,.6);
+      overflow: hidden;
+    }
+
+    .section-toggle {
+      width: 100%;
+      border: 0;
+      background: linear-gradient(135deg, rgba(0,210,255,0.35), rgba(108,99,255,0.45));
+      color: #fff;
+      padding: 0.7rem 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .section-toggle:hover {
+      filter: brightness(1.05);
+    }
+
+    .section-body {
+      padding: 0.75rem 0.9rem 0.9rem;
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.7rem;
+    }
+
+    .section-chevron {
+      transition: transform 0.2s ease;
+    }
+
+    .form-section.collapsed .section-body {
+      display: none;
+    }
+
+    .form-section.collapsed .section-chevron {
+      transform: rotate(-90deg);
+    }
+  </style>
+</head>
+<body>
+  <main class="login-page">
+    <div class="login-container">
+      <a href="index.html" class="back-link">← Back to Home</a>
+      <div class="login-header">
+        <div class="login-card-icon"><span>📝</span></div>
+        <h1>Participant Registration</h1>
+        <p>Register for upcoming events and share a few details to help us personalize your experience.</p>
+      </div>
+
+      <form id="participant-registration-form" class="login-form" novalidate>
+        <div class="form-section">
+          <button type="button" class="section-toggle">
+            <span>Basic Information</span>
+            <span class="section-chevron">▾</span>
+          </button>
+          <div class="section-body">
+            <div class="field-row">
+              <div class="field">
+                <label for="firstName">First Name</label>
+                <input id="firstName" name="firstName" type="text" required>
+              </div>
+              <div class="field">
+                <label for="lastName">Last Name</label>
+                <input id="lastName" name="lastName" type="text" required>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="email">Email Address</label>
+                <input id="email" name="email" type="email" required>
+              </div>
+              <div class="field">
+                <label for="phone">Phone Number</label>
+                <input id="phone" name="phone" type="tel" required>
+              </div>
+            </div>
+            <div class="field">
+              <label for="dob">Date of Birth (optional)</label>
+              <input id="dob" name="dob" type="date">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section collapsed">
+          <button type="button" class="section-toggle">
+            <span>Professional Details</span>
+            <span class="section-chevron">▾</span>
+          </button>
+          <div class="section-body">
+            <div class="field-row">
+              <div class="field">
+                <label for="jobTitle">Job Title / Role</label>
+                <input id="jobTitle" name="jobTitle" type="text">
+              </div>
+              <div class="field">
+                <label for="company">Company / Organization</label>
+                <input id="company" name="company" type="text">
+              </div>
+            </div>
+            <div class="field">
+              <label for="social">LinkedIn / Social Profile (optional)</label>
+              <input id="social" name="social" type="url" placeholder="https://">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section collapsed">
+          <button type="button" class="section-toggle">
+            <span>Event Details</span>
+            <span class="section-chevron">▾</span>
+          </button>
+          <div class="section-body">
+            <div class="field">
+              <label for="eventName">Event</label>
+              <input id="eventName" name="eventName" type="text" placeholder="Event name" required>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="eventDate">Date</label>
+                <input id="eventDate" name="eventDate" type="date" required>
+              </div>
+              <div class="field">
+                <label for="eventTime">Time</label>
+                <input id="eventTime" name="eventTime" type="time" required>
+              </div>
+            </div>
+            <div class="field">
+              <label for="eventLocation">Location</label>
+              <input id="eventLocation" name="eventLocation" type="text" required>
+            </div>
+            <div class="field">
+              <label for="ticketType">Ticket Type</label>
+              <select id="ticketType" name="ticketType" required>
+                <option value="">Select ticket type</option>
+                <option value="vip">VIP</option>
+                <option value="general">General Admission</option>
+                <option value="student">Student</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="sessions">Session / Workshop Preferences</label>
+              <select id="sessions" name="sessions" multiple>
+                <option>Keynote</option>
+                <option>Workshop A</option>
+                <option>Workshop B</option>
+                <option>Networking Session</option>
+              </select>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="meal">Meal Preference</label>
+                <select id="meal" name="meal">
+                  <option>None</option>
+                  <option>Vegetarian</option>
+                  <option>Vegan</option>
+                  <option>Non-Vegetarian</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="diet">Dietary Restrictions</label>
+                <input id="diet" name="diet" type="text" placeholder="e.g., Nut allergy">
+              </div>
+            </div>
+            <div class="field">
+              <label for="accessibility">Accessibility / Special Requests</label>
+              <textarea id="accessibility" name="accessibility" rows="3" placeholder="Tell us how we can support you"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section collapsed">
+          <button type="button" class="section-toggle">
+            <span>Additional Information</span>
+            <span class="section-chevron">▾</span>
+          </button>
+          <div class="section-body">
+            <div class="field">
+              <label for="referral">How did you hear about this event?</label>
+              <select id="referral" name="referral">
+                <option>Social Media</option>
+                <option>Friend / Colleague</option>
+                <option>Email</option>
+                <option>Website</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="tshirt">T-shirt Size</label>
+                <select id="tshirt" name="tshirt">
+                  <option>XS</option>
+                  <option>S</option>
+                  <option>M</option>
+                  <option>L</option>
+                  <option>XL</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label class="remember">
+                <input id="agree" name="agree" type="checkbox" required>
+                I agree to the Terms & Conditions and Privacy Policy
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" onclick="window.location.href='index.html'">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit Registration</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    (function(){
+      const form = document.getElementById('participant-registration-form');
+      if(!form) return;
+
+      // Accordion-style dropdown sections
+      const sections = form.querySelectorAll('.form-section');
+      sections.forEach(section => {
+        const toggle = section.querySelector('.section-toggle');
+        if(!toggle) return;
+        toggle.addEventListener('click', () => {
+          section.classList.toggle('collapsed');
+        });
+      });
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        if(!form.checkValidity()){
+          form.reportValidity();
+          return;
+        }
+        alert('Registration submitted! (Demo only, not yet saved to backend)');
+        window.location.href = 'index.html';
+      });
+    })();
+  </script>
+</body>
+</html>

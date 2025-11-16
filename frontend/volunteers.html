@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EventNest – Volunteers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .v-form{display:grid;gap:.75rem}
+    .v-form-section{margin-bottom:.9rem;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:rgba(24,16,29,.72);overflow:hidden}
+    .v-section-toggle{width:100%;border:0;background:linear-gradient(135deg, rgba(0,210,255,0.28), rgba(191,0,255,0.55));color:#fff;padding:.7rem .9rem;display:flex;align-items:center;justify-content:space-between;font-weight:600;cursor:pointer}
+    .v-section-toggle:hover{filter:brightness(1.05)}
+    .v-section-body{padding:.8rem .9rem 1rem;display:grid;gap:.6rem}
+    .v-field-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
+    .v-section-chevron{transition:transform .2s ease}
+    .v-form-section.collapsed .v-section-body{display:none}
+    .v-form-section.collapsed .v-section-chevron{transform:rotate(-90deg)}
+    .chip-group{display:flex;flex-wrap:wrap;gap:.4rem .8rem;font-size:.9rem}
+    .chip-group label{display:inline-flex;align-items:center;gap:.3rem;padding:.3rem .55rem;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);cursor:pointer}
+    .chip-group input{accent-color:#ff69b4}
+    [data-parent-consent],[data-bg-extra]{margin-top:.25rem}
+    @media (max-width:640px){.v-field-row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header class="navbar" role="navigation" aria-label="Primary">
+    <div class="nav-inner">
+      <a class="brand" href="index.html"><span class="group">&lt;CodeInc&gt;</span></a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <nav id="nav-links" class="nav-links">
+        <a href="index.html#home">Home</a>
+        <a href="events.html">Events</a>
+        <a href="dashboard2.html">Dashboard</a>
+        <div class="login-nav" id="login-nav">
+          <a href="#login" id="login-link" aria-expanded="false" aria-haspopup="true">Volunteer Registration</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="volunteers-page" style="max-width:1200px;margin:1rem auto;padding:0 1rem;">
+    <section class="about" aria-label="Volunteers Intro">
+      <h1>Volunteers</h1>
+      <p>Manage and track volunteers across your events.</p>
+    </section>
+
+    <section id="login" class="v-register" aria-label="Volunteer Registration" style="margin:1.25rem 0">
+      <article class="card">
+        <div class="card-body">
+          <h2>Volunteer Registration</h2>
+          <p class="muted">Volunteer sign-up capturing your availability, skills, and preferences.</p>
+          <form id="volunteer-register-form" class="login-form v-form" novalidate>
+            <div class="v-form-section">
+              <button type="button" class="v-section-toggle">
+                <span>Personal Information</span>
+                <span class="v-section-chevron">▾</span>
+              </button>
+              <div class="v-section-body">
+                <div class="v-field-row">
+                  <div class="field">
+                    <label for="vr-name">Full Name</label>
+                    <input id="vr-name" name="name" type="text" required>
+                  </div>
+                  <div class="field">
+                    <label for="vr-email">Email Address</label>
+                    <input id="vr-email" name="email" type="email" required>
+                  </div>
+                </div>
+                <div class="v-field-row">
+                  <div class="field">
+                    <label for="vr-phone">Phone Number</label>
+                    <input id="vr-phone" name="phone" type="tel" required>
+                  </div>
+                  <div class="field">
+                    <label for="vr-neighborhood">Neighborhood / Area (optional)</label>
+                    <input id="vr-neighborhood" name="neighborhood" type="text" placeholder="e.g., Kothrud, Pune">
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="vr-address">Address (optional)</label>
+                  <input id="vr-address" name="address" type="text" placeholder="Street, City, ZIP">
+                </div>
+                <div class="v-field-row">
+                  <div class="field">
+                    <label for="vr-emg-name">Emergency Contact Name</label>
+                    <input id="vr-emg-name" name="emergencyName" type="text" required>
+                  </div>
+                  <div class="field">
+                    <label for="vr-emg-phone">Emergency Contact Phone</label>
+                    <input id="vr-emg-phone" name="emergencyPhone" type="tel" required>
+                  </div>
+                </div>
+                <div class="v-field-row">
+                  <div class="field">
+                    <label for="vr-age-group">Age Group</label>
+                    <select id="vr-age-group" name="ageGroup" required>
+                      <option value="">Select</option>
+                      <option value="under18">Under 18</option>
+                      <option value="18plus">18 or above</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="field" data-parent-consent>
+                  <label class="remember">
+                    <input id="vr-parent-consent" name="parentConsent" type="checkbox">
+                    I confirm parental/guardian consent for youth volunteers.
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="v-form-section collapsed">
+              <button type="button" class="v-section-toggle">
+                <span>Availability &amp; Scheduling</span>
+                <span class="v-section-chevron">▾</span>
+              </button>
+              <div class="v-section-body">
+                <div class="field">
+                  <label>Which days are you generally available?</label>
+                  <div class="chip-group">
+                    <label><input type="checkbox" name="availabilityDays" value="Weekdays"> Weekdays</label>
+                    <label><input type="checkbox" name="availabilityDays" value="Weekends"> Weekends</label>
+                    <label><input type="checkbox" name="availabilityDays" value="Mornings"> Mornings</label>
+                    <label><input type="checkbox" name="availabilityDays" value="Evenings"> Evenings</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Preferred shift times</label>
+                  <div class="chip-group">
+                    <label><input type="checkbox" name="preferredShifts" value="Morning"> Morning</label>
+                    <label><input type="checkbox" name="preferredShifts" value="Afternoon"> Afternoon</label>
+                    <label><input type="checkbox" name="preferredShifts" value="Evening"> Evening</label>
+                    <label><input type="checkbox" name="preferredShifts" value="FullDay"> Full day when needed</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="vr-availability-notes">Availability details (dates, exams, etc.)</label>
+                  <textarea id="vr-availability-notes" name="availabilityNotes" rows="3" placeholder="Mention specific dates or periods you are free"></textarea>
+                </div>
+                <div class="field">
+                  <label class="remember">
+                    <input id="vr-last-minute" name="lastMinute" type="checkbox" value="yes">
+                    I am open to last-minute or substitute shifts.
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="v-form-section collapsed">
+              <button type="button" class="v-section-toggle">
+                <span>Skills &amp; Preferences</span>
+                <span class="v-section-chevron">▾</span>
+              </button>
+              <div class="v-section-body">
+                <div class="field">
+                  <label>Volunteer roles you are interested in</label>
+                  <div class="chip-group">
+                    <label><input type="checkbox" name="roles" value="registration"> Registration desk / check-in</label>
+                    <label><input type="checkbox" name="roles" value="usher"> Usher / crowd management</label>
+                    <label><input type="checkbox" name="roles" value="tech"> Technical support (AV, setup)</label>
+                    <label><input type="checkbox" name="roles" value="firstaid"> First aid / medical support</label>
+                    <label><input type="checkbox" name="roles" value="logistics"> Logistics / setup &amp; teardown</label>
+                    <label><input type="checkbox" name="roles" value="hospitality"> Hospitality / guest support</label>
+                    <label><input type="checkbox" name="roles" value="social"> Social media / photography</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="vr-primary-role">Preferred primary role</label>
+                  <select id="vr-primary-role" name="primaryRole">
+                    <option value="">Select preferred role</option>
+                    <option value="registration">Registration Desk</option>
+                    <option value="usher">Usher / Crowd Management</option>
+                    <option value="tech">Technical Support</option>
+                    <option value="firstaid">First Aid</option>
+                    <option value="logistics">Logistics</option>
+                    <option value="hospitality">Hospitality</option>
+                    <option value="social">Social Media / Content</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="vr-skills">Relevant skills or prior experience</label>
+                  <textarea id="vr-skills" name="skills" rows="3" placeholder="Briefly describe your skills or previous volunteering"></textarea>
+                </div>
+                <div class="field">
+                  <label for="vr-certifications">Certifications / special qualifications (optional)</label>
+                  <input id="vr-certifications" name="certificationsText" type="text" placeholder="e.g., First aid, nursing, event management">
+                </div>
+              </div>
+            </div>
+
+            <div class="v-form-section collapsed">
+              <button type="button" class="v-section-toggle">
+                <span>Consent &amp; Agreements</span>
+                <span class="v-section-chevron">▾</span>
+              </button>
+              <div class="v-section-body">
+                <div class="field">
+                  <label class="remember">
+                    <input type="checkbox" id="vr-consent-waiver" name="consentWaiver" required>
+                    I agree to the volunteer terms, code of conduct, and liability waiver.
+                  </label>
+                </div>
+                <div class="field">
+                  <label class="remember">
+                    <input type="checkbox" id="vr-consent-bg" name="consentBgCheck">
+                    I consent to a background check if the role requires it.
+                  </label>
+                </div>
+                <div class="field" data-bg-extra>
+                  <label for="vr-bg-notes">Background check / ID details (only if applicable)</label>
+                  <textarea id="vr-bg-notes" name="bgNotes" rows="3" placeholder="Share ID type or any relevant notes"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="v-form-section collapsed">
+              <button type="button" class="v-section-toggle">
+                <span>Additional Info &amp; Documents</span>
+                <span class="v-section-chevron">▾</span>
+              </button>
+              <div class="v-section-body">
+                <div class="v-field-row">
+                  <div class="field">
+                    <label for="vr-tshirt">T-shirt Size (optional)</label>
+                    <select id="vr-tshirt" name="tshirt">
+                      <option value="">Select</option>
+                      <option>XS</option>
+                      <option>S</option>
+                      <option>M</option>
+                      <option>L</option>
+                      <option>XL</option>
+                      <option>XXL</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="vr-transport">Transportation needs (optional)</label>
+                    <input id="vr-transport" name="transport" type="text" placeholder="e.g., need pickup from station">
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="vr-message">Anything else you'd like us to know?</label>
+                  <textarea id="vr-message" name="message" rows="3"></textarea>
+                </div>
+                <div class="field">
+                  <label for="vr-support-docs">Upload supporting documents (optional)</label>
+                  <input id="vr-support-docs" name="supportDocs" type="file" multiple>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="reset" class="btn btn-ghost">Clear</button>
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+          </form>
+        </div>
+      </article>
+    </section>
+
+    <section class="v-dash" aria-label="Overview Dashboard">
+      <div class="v-filters">
+        <input id="v-search" type="search" placeholder="Search volunteers by name, email, speciality..." aria-label="Search volunteers">
+        <select id="v-status" aria-label="Filter by status">
+          <option value="">All Status</option>
+          <option>Available</option>
+          <option>Busy</option>
+          <option>On Leave</option>
+        </select>
+        <select id="v-event" aria-label="Filter by event">
+          <option value="">All Events</option>
+        </select>
+      </div>
+      <div class="v-stats">
+        <article class="v-card" data-metric="totalVolunteers">
+          <div class="icon">👥</div>
+          <div class="val" id="v-total">0</div>
+          <div class="label">Total Volunteers</div>
+        </article>
+        <article class="v-card" data-metric="availableVolunteers">
+          <div class="icon">✅</div>
+          <div class="val" id="v-available">0</div>
+          <div class="label">Available Volunteers</div>
+        </article>
+        <article class="v-card" data-metric="totalEvents">
+          <div class="icon">📅</div>
+          <div class="val" id="v-events">0</div>
+          <div class="label">Total Events</div>
+        </article>
+        <article class="v-card" data-metric="upcomingEvents">
+          <div class="icon">⏭️</div>
+          <div class="val" id="v-upcoming">0</div>
+          <div class="label">Upcoming Events</div>
+        </article>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer" aria-label="Footer">
+    <div class="footer-grid">
+      <div>
+        <h3>EVENT NEST - NESTING IDEAS,CRAFTING EXPERIENCE <span class="group">&lt;CodeInc&gt;</span></h3>
+        <p>contact@connecthub.example</p>
+        <div class="socials">
+          <a href="#" aria-label="Twitter">Twitter</a>
+          <a href="#" aria-label="Instagram">Instagram</a>
+          <a href="#" aria-label="LinkedIn">LinkedIn</a>
+        </div>
+      </div>
+      <div>
+        <h4>Newsletter</h4>
+        <form class="newsletter" novalidate>
+          <input type="email" placeholder="Your email" aria-label="Email">
+          <button class="btn btn-primary" type="submit">Subscribe</button>
+        </form>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <ul class="links">
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="copyright"> <span id="year"></span> EVENT NEST - NESTING IDEAS,CRAFTING EXPERIENCE • &lt;CodeInc&gt;</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    (function(){
+      const form = document.getElementById('volunteer-register-form');
+      if(!form) return;
+      // Accordion dropdown behavior
+      const sections = form.querySelectorAll('.v-form-section');
+      sections.forEach(section => {
+        const toggle = section.querySelector('.v-section-toggle');
+        if(!toggle) return;
+        toggle.addEventListener('click', () => {
+          const isCollapsed = section.classList.contains('collapsed');
+          // Collapse all others first
+          sections.forEach(other => {
+            if(other !== section) other.classList.add('collapsed');
+          });
+          // Toggle current section; allows all-collapsed state
+          if(isCollapsed){
+            section.classList.remove('collapsed');
+          }else{
+            section.classList.add('collapsed');
+          }
+        });
+      });
+
+      // Conditional: parent consent only for under-18
+      const ageGroup = document.getElementById('vr-age-group');
+      const parentConsentField = form.querySelector('[data-parent-consent]');
+      const parentConsentCheckbox = document.getElementById('vr-parent-consent');
+      function syncParentConsent(){
+        if(!ageGroup || !parentConsentField) return;
+        if(ageGroup.value === 'under18'){
+          parentConsentField.style.display = '';
+        }else{
+          parentConsentField.style.display = 'none';
+          if(parentConsentCheckbox) parentConsentCheckbox.checked = false;
+        }
+      }
+      if(ageGroup){
+        syncParentConsent();
+        ageGroup.addEventListener('change', syncParentConsent);
+      }
+
+      // Conditional: extra background-check notes only when consent checked
+      const bgCheckbox = document.getElementById('vr-consent-bg');
+      const bgExtraField = form.querySelector('[data-bg-extra]');
+      const bgNotes = document.getElementById('vr-bg-notes');
+      function syncBgExtra(){
+        if(!bgCheckbox || !bgExtraField) return;
+        if(bgCheckbox.checked){
+          bgExtraField.style.display = '';
+        }else{
+          bgExtraField.style.display = 'none';
+          if(bgNotes) bgNotes.value = '';
+        }
+      }
+      if(bgCheckbox){
+        syncBgExtra();
+        bgCheckbox.addEventListener('change', syncBgExtra);
+      }
+
+      // Submit: send volunteer registration to backend API
+      form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        if(!form.checkValidity()){ form.reportValidity(); return; }
+
+        const fd = new FormData(form);
+
+        // Base fields for backend Volunteer model
+        const name = (fd.get('name')||'').toString().trim();
+        const email = (fd.get('email')||'').toString().trim();
+        const phone = (fd.get('phone')||'').toString().trim();
+
+        // Derive speciality from primary role, fallback to first selected role or generic
+        const primaryRole = (fd.get('primaryRole')||'').toString();
+        const selectedRoles = Array.from(form.querySelectorAll('input[name="roles"]:checked')).map(i=>i.value);
+        let speciality = primaryRole || (selectedRoles[0]||'General');
+
+        // Map availability chips to a compact string for availableDates
+        const availabilityDays = Array.from(form.querySelectorAll('input[name="availabilityDays"]:checked')).map(i=>i.value);
+        const preferredShifts = Array.from(form.querySelectorAll('input[name="preferredShifts"]:checked')).map(i=>i.value);
+        const availabilityNotes = (fd.get('availabilityNotes')||'').toString().trim();
+        const availableDates = [
+          availabilityDays.join(', '),
+          preferredShifts.join(', '),
+          availabilityNotes
+        ].filter(Boolean).join(' | ');
+
+        const message = (fd.get('message')||'').toString().trim();
+
+        const payload = {
+          name,
+          email,
+          phone,
+          speciality,
+          availableDates,
+          message,
+          status: 'Available'
+        };
+
+        try{
+          const res = await fetch('http://localhost:4000/api/volunteers',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if(!res.ok){
+            const msg = data?.message || 'Failed to register volunteer';
+            alert(msg);
+            return;
+          }
+          alert('Thank you for registering as a volunteer!');
+          form.reset();
+          syncParentConsent();
+          syncBgExtra();
+          // Refresh volunteers dashboard stats/table if available
+          if(window.__volunteersLoadAll){
+            try{ window.__volunteersLoadAll(); }catch{}
+          }
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }catch(err){
+          alert('Network error while saving volunteer. Please try again.');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

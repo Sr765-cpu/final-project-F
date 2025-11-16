@@ -1,0 +1,13 @@
+{
+  "name": "event-nest-root",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "start": "npm --prefix backend run start",
+    "dev": "npm --prefix backend run dev",
+    "postinstall": "npm --prefix backend install && npm --prefix backend run prisma:generate"
+  },
+  "dependencies": {
+    "react-hook-form": "^7.66.0"
+  }
+}

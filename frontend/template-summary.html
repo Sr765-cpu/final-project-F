@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Summary | Event Templates</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      color: #111827;
+      line-height: 1.6;
+    }
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      padding: 14px 0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    header .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      color: #111827;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      gap: 6px;
+      transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    }
+    .btn:hover {
+      background: #f3f4f6;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
+    }
+    main {
+      flex: 1;
+      padding: 24px 0 40px;
+    }
+    .summary-card {
+      background: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+    .summary-image {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      background: #e5e7eb;
+    }
+    .summary-body {
+      padding: 20px 22px 22px;
+    }
+    .summary-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-bottom: 10px;
+    }
+    .summary-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge {
+      display: inline-flex;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-weight: 500;
+    }
+    .summary-title {
+      font-size: 1.4rem;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+    .summary-paragraph {
+      margin-top: 8px;
+      font-size: 0.98rem;
+      color: #374151;
+      white-space: pre-wrap;
+    }
+    .empty {
+      text-align: center;
+      padding: 48px 20px;
+      color: #6b7280;
+    }
+    footer {
+      padding: 16px 0 24px;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      text-align: center;
+    }
+    @media (max-width: 640px) {
+      .summary-card { border-radius: 0; box-shadow: none; }
+      header { position: static; }
+      main { padding-top: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="container">
+        <h1>Event Summary</h1>
+        <button class="btn" id="back-btn" type="button">&#8592; Back to Templates</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="container" id="summary-root">
+        <div class="empty">Loading summary...</div>
+      </div>
+    </main>
+
+    <footer>
+      Generated from your saved event template. You can adjust details back on the templates page.
+    </footer>
+  </div>
+
+  <script>
+    function formatDate(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return '';
+      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function buildSummary(tpl) {
+      const dateText = formatDate(tpl.date || tpl.datetime);
+      const parts = [];
+
+      if (dateText && tpl.location && tpl.organizer) {
+        parts.push(`On ${dateText}, ${tpl.organizer} hosted "${tpl.title}" in ${tpl.location}.`);
+      } else if (tpl.organizer && tpl.title) {
+        parts.push(`${tpl.organizer} hosted an event titled "${tpl.title}."`);
+      } else if (tpl.title) {
+        parts.push(`"${tpl.title}" was hosted as a special event.`);
+      }
+
+      if (tpl.description) {
+        parts.push(`The event focused on ${tpl.description.trim()}.`);
+      }
+
+      if (tpl.category) {
+        parts.push(`It was designed as a ${tpl.category.toLowerCase()}-style gathering, bringing people together around a shared interest.`);
+      }
+
+      parts.push('Overall, the event created meaningful moments for attendees and helped strengthen connections within your community.');
+
+      return parts.join(' ');
+    }
+
+    document.getElementById('back-btn').addEventListener('click', function () {
+      window.location.href = 'templates.html';
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const root = document.getElementById('summary-root');
+      let templates = [];
+      try {
+        templates = JSON.parse(localStorage.getItem('templates') || '[]');
+      } catch (e) {
+        templates = [];
+      }
+      const selectedId = localStorage.getItem('eventnest_summary_template_id');
+      const tpl = templates.find(t => t.id === selectedId);
+
+      if (!tpl) {
+        root.innerHTML = '<div class="empty">No template selected. Please go back and choose a template to generate its summary.</div>';
+        return;
+      }
+
+      const images = tpl.images || [];
+      const imgUrl = Array.isArray(images) ? (images[0] || '') : (images || '');
+      const dateText = formatDate(tpl.date || tpl.datetime);
+      const summaryText = buildSummary(tpl);
+
+      root.innerHTML = `
+        <article class="summary-card">
+          ${imgUrl ? `<img class="summary-image" src="${imgUrl}" alt="${tpl.title || 'Event image'}" />` : ''}
+          <div class="summary-body">
+            <div class="summary-meta">
+              ${tpl.category ? `<span><span class="badge">${tpl.category.charAt(0).toUpperCase() + tpl.category.slice(1)}</span></span>` : ''}
+              ${dateText ? `<span>📅 ${dateText}</span>` : ''}
+              ${tpl.location ? `<span>📍 ${tpl.location}</span>` : ''}
+              ${tpl.organizer ? `<span>👤 ${tpl.organizer}</span>` : ''}
+            </div>
+            <h2 class="summary-title">${tpl.title || 'Your Event'}</h2>
+            <p class="summary-paragraph">${summaryText}</p>
+          </div>
+        </article>
+      `;
+    });
+  </script>
+</body>
+</html>

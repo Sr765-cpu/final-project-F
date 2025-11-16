@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ticket & Resource Booking • EventNest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Scoped to booking page only */
+    .booking-page { max-width: 900px; margin: 1.2rem auto; padding: 0 1rem; }
+    .booking-header { border-radius: 18px; padding: 1.2rem; background: linear-gradient(135deg, rgba(191,0,255,.20), rgba(255,105,180,.14)); box-shadow: var(--shadow); }
+    .booking-header h1 { margin: .25rem 0 .4rem; }
+    .booking-form { display: grid; gap: .8rem 1rem; grid-template-columns: 1fr 1fr; margin-top: 1rem; }
+    .booking-form .field { display: grid; gap: .35rem; }
+    .booking-form .field.wide { grid-column: 1 / -1; }
+    .booking-actions { display: flex; gap: .6rem; justify-content: flex-end; margin-top: .6rem; grid-column: 1 / -1; }
+    @media (max-width: 768px){ .booking-form{ grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="navbar" role="navigation" aria-label="Primary">
+    <div class="nav-inner">
+      <a class="brand" href="events.html"><span class="group">&lt;CodeInc&gt;</span></a>
+      <nav class="nav-links">
+        <a href="events.html">Back to Events</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="booking-page">
+    <section class="booking-header" aria-label="Ticket & Resource Booking">
+      <h1>Ticket & Resource Booking</h1>
+      <p class="muted">Request resources for your event and proceed with ticket booking details. This is a frontend-only form; availability is validated on the backend in a real deployment.</p>
+    </section>
+
+    <section class="about" aria-label="Resource Booking Form">
+      <h2>Resource Booking</h2>
+      <form id="resource-booking-form" class="booking-form" novalidate>
+        <div class="field">
+          <label for="res-type">Resource Type</label>
+          <select id="res-type" name="resourceType" required>
+            <option value="">Select a resource</option>
+            <option>Venue</option>
+            <option>Equipment</option>
+            <option>Vehicles</option>
+            <option>Supplies</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="quantity">Quantity (if applicable)</label>
+          <input id="quantity" name="quantity" type="number" min="1" placeholder="e.g., 2">
+        </div>
+        <div class="field">
+          <label for="date">Date</label>
+          <input id="date" name="date" type="date" required>
+        </div>
+        <div class="field">
+          <label for="start-time">Start Time</label>
+          <input id="start-time" name="startTime" type="time" required>
+        </div>
+        <div class="field">
+          <label for="end-time">End Time</label>
+          <input id="end-time" name="endTime" type="time" required>
+        </div>
+        <div class="field">
+          <label for="duration">Duration</label>
+          <input id="duration" name="duration" type="text" placeholder="e.g., 3 hours">
+        </div>
+        <div class="field wide">
+          <label for="purpose">Purpose / Event Reference</label>
+          <input id="purpose" name="purpose" type="text" placeholder="e.g., Community Cleanup #12" required>
+        </div>
+        <div class="field">
+          <label for="contact-name">Contact Name</label>
+          <input id="contact-name" name="contactName" type="text" required>
+        </div>
+        <div class="field">
+          <label for="contact-email">Contact Email</label>
+          <input id="contact-email" name="contactEmail" type="email" required>
+        </div>
+        <div class="field">
+          <label for="contact-phone">Contact Phone</label>
+          <input id="contact-phone" name="contactPhone" type="tel" placeholder="e.g., +91 98765 43210">
+        </div>
+        <div class="field wide">
+          <label for="special-req">Special Requirements / Notes</label>
+          <textarea id="special-req" name="specialReq" rows="3" placeholder="Enter any special needs or constraints"></textarea>
+        </div>
+        <div class="booking-actions">
+          <a class="btn btn-ghost" href="events.html">Cancel</a>
+          <button type="submit" class="btn btn-primary">Request Booking</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="reviews" aria-label="Ticket Details (Optional)">
+      <h2>Ticket Details (Optional)</h2>
+      <form id="ticket-form" class="booking-form" novalidate>
+        <div class="field">
+          <label for="ticket-type">Ticket Type</label>
+          <select id="ticket-type" name="ticketType">
+            <option value="">Select type</option>
+            <option>General</option>
+            <option>VIP</option>
+            <option>Student</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="ticket-price">Price (₹)</label>
+          <input id="ticket-price" name="ticketPrice" type="number" min="0" step="0.01" placeholder="e.g., 199">
+        </div>
+        <div class="field">
+          <label for="ticket-qty">Available Quantity</label>
+          <input id="ticket-qty" name="ticketQty" type="number" min="0" placeholder="e.g., 100">
+        </div>
+        <div class="field">
+          <label for="ticket-release">Release Date</label>
+          <input id="ticket-release" name="ticketRelease" type="date">
+        </div>
+        <div class="field wide">
+          <label for="ticket-notes">Notes</label>
+          <textarea id="ticket-notes" name="ticketNotes" rows="3" placeholder="Any ticketing info"></textarea>
+        </div>
+        <div class="booking-actions">
+          <a class="btn btn-ghost" href="events.html">Back to Events</a>
+          <button type="submit" class="btn btn-secondary">Save Ticket Details</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer" aria-label="Footer">
+    <div class="footer-grid">
+      <div>
+        <h3>EVENT NEST - NESTING IDEAS,CRAFTING EXPERIENCE <span class="group">&lt;CodeInc&gt;</span></h3>
+        <p>contact@connecthub.example</p>
+        <div class="socials">
+          <a href="#" aria-label="Twitter">Twitter</a>
+          <a href="#" aria-label="Instagram">Instagram</a>
+          <a href="#" aria-label="LinkedIn">LinkedIn</a>
+        </div>
+      </div>
+      <div>
+        <h4>Newsletter</h4>
+        <form class="newsletter" novalidate>
+          <input type="email" placeholder="Your email" aria-label="Email">
+          <button class="btn btn-primary" type="submit">Subscribe</button>
+        </form>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <ul class="links">
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="copyright"> <span id="year"></span> EVENT NEST - NESTING IDEAS,CRAFTING EXPERIENCE • &lt;CodeInc&gt;</p>
+  </footer>
+
+  <script>
+    // Frontend-only submission handlers with basic validation feedback
+    function showToast(msg){ alert(msg); }
+    document.getElementById('resource-booking-form').addEventListener('submit', function(e){
+      e.preventDefault();
+      const required = ['res-type','date','start-time','end-time','purpose','contact-name','contact-email'];
+      for(const id of required){
+        const el = document.getElementById(id);
+        if(!el.value){ el.focus(); showToast('Please fill out required fields.'); return; }
+      }
+      showToast('Booking request submitted (frontend demo). Redirecting to Events...');
+      window.location.href = 'events.html';
+    });
+    document.getElementById('ticket-form').addEventListener('submit', function(e){
+      e.preventDefault();
+      showToast('Ticket details saved (frontend demo).');
+    });
+  </script>
+</body>
+</html>

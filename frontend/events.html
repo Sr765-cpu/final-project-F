@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EventNest – Community Events</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="navbar" role="navigation" aria-label="Primary">
+    <div class="nav-inner">
+      <a class="brand" href="index.html"> <span class="group">&lt;CodeInc&gt;</span></a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <nav id="nav-links" class="nav-links">
+        <a href="index.html#home">Home</a>
+        <a href="events.html">Events</a>
+        <a href="volunteers.html">Volunteers</a>
+        <a href="dashboard2.html">Dashboard</a>
+        <a href="communication.html">Communication</a>
+        <div class="login-nav" id="login-nav">
+          <a href="login.html" id="login-link"><span id="login-text">Login</span></a>
+          <div class="login-dropdown" id="login-dropdown" hidden>
+            <div class="login-select-dd" id="login-select-dd">
+              <h3>Login</h3>
+              <div class="role-actions">
+                <button class="btn btn-primary" data-role-dd="user">Login as Organizer</button>
+                <button class="btn btn-secondary" data-role-dd="participant">Login as Participant</button>
+              </div>
+            </div>
+            <form class="login-form-dd" id="login-form-dd" hidden novalidate>
+              <p class="role-hint">Role: <button type="button" class="role-toggle" id="role-toggle-dd"><span id="role-label-dd">User</span></button></p>
+              <div class="field">
+                <label for="dd-name">Name</label>
+                <input id="dd-name" name="name" type="text" required>
+              </div>
+              <div class="field">
+                <label for="dd-email">Email</label>
+                <input id="dd-email" name="email" type="email" required>
+              </div>
+              <div class="field">
+                <label for="dd-address">Address</label>
+                <input id="dd-address" name="address" type="text" required>
+              </div>
+              <div class="field">
+                <label for="dd-password">Password</label>
+                <input id="dd-password" name="password" type="password" required minlength="6">
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn btn-ghost" id="back-to-select-dd">Back to selection</button>
+                <button type="submit" class="btn btn-primary">Continue</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="events-page" style="max-width:1200px;margin:1rem auto;padding:0 1rem;">
+    <section class="about" aria-label="Community Events Intro">
+      <h1>Community Events</h1>
+      <p>Discover curated events near you. Register, volunteer, and make an impact.</p>
+    </section>
+    <!-- RSVP Modal -->
+    <div class="modal" id="rsvp-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="rsvp-title">
+      <div class="modal-backdrop" data-close></div>
+      <div class="modal-dialog">
+        <button class="modal-close" aria-label="Close" data-close>✕</button>
+        <div class="modal-content">
+          <h2 id="rsvp-title">RSVP</h2>
+          <p id="rsvp-event-title" class="muted"></p>
+          <form id="rsvp-form" class="login-form" novalidate>
+            <input type="hidden" id="rsvp-event-id" name="eventId">
+            <div class="field"><label for="rsvp-name">Name</label><input id="rsvp-name" name="name" type="text" required></div>
+            <div class="field"><label for="rsvp-email">Email</label><input id="rsvp-email" name="email" type="email" required></div>
+            <div class="field"><label for="rsvp-message">Message (optional)</label><textarea id="rsvp-message" name="message" rows="3"></textarea></div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+              <button type="submit" class="btn btn-primary">Submit RSVP</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Volunteer Modal -->
+    <div class="modal" id="volunteer-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="vol-title">
+      <div class="modal-backdrop" data-close></div>
+      <div class="modal-dialog">
+        <button class="modal-close" aria-label="Close" data-close>✕</button>
+        <div class="modal-content">
+          <h2 id="vol-title">Volunteer</h2>
+          <p id="vol-event-title" class="muted"></p>
+          <p class="muted">Event Type: <strong id="vol-event-type">—</strong></p>
+          <form id="volunteer-form" class="login-form" novalidate>
+            <input type="hidden" id="vol-event-id" name="eventId">
+            <div class="field"><label for="vol-name">Name</label><input id="vol-name" name="name" type="text" required></div>
+            <div class="field"><label for="vol-email">Email</label><input id="vol-email" name="email" type="email" required></div>
+            <div class="field"><label for="vol-phone">Contact Number</label><input id="vol-phone" name="phone" type="tel" placeholder="e.g., +91 98765 43210"></div>
+            <div class="field"><label for="vol-address">Address</label><input id="vol-address" name="address" type="text" placeholder="Street, City, ZIP"></div>
+            <div class="field"><label for="vol-speciality">Speciality</label>
+              <select id="vol-speciality" name="speciality">
+                <option value="">Select</option>
+                <option>Management</option>
+                <option>Technical</option>
+                <option>Hospitality</option>
+                <option>Medical</option>
+                <option>Logistics</option>
+              </select>
+            </div>
+            <div class="field"><label for="vol-available">Available Dates</label><input id="vol-available" name="availableDates" type="text" placeholder="e.g., 28-30 Oct, Weekends"></div>
+            <div class="field"><label for="vol-availability-times">Availability Times</label><input id="vol-availability-times" name="availabilityTimes" type="text" placeholder="e.g., 9am–1pm, evenings"></div>
+            <div class="field"><label for="vol-status">Status</label>
+              <select id="vol-status" name="status">
+                <option>Available</option>
+                <option>Busy</option>
+                <option>On Leave</option>
+              </select>
+            </div>
+            <div class="field"><label for="vol-roles">Preferred Roles</label>
+              <select id="vol-roles" name="roles" multiple>
+                <option value="registration">Registration Desk</option>
+                <option value="usher">Usher / Crowd Management</option>
+                <option value="tech">Technical Support</option>
+                <option value="firstaid">First Aid</option>
+                <option value="logistics">Logistics</option>
+                <option value="cleaning">Cleanup</option>
+                <option value="hospitality">Hospitality</option>
+                <option value="social">Social Media</option>
+              </select>
+            </div>
+            <div class="field"><label for="vol-motivation">Motivation / Experience</label><textarea id="vol-motivation" name="motivation" rows="3" placeholder="Tell us about your experience or motivation"></textarea></div>
+            <div class="field"><label for="vol-emg-name">Emergency Contact Name</label><input id="vol-emg-name" name="emergencyName" type="text"></div>
+            <div class="field"><label for="vol-emg-phone">Emergency Contact Phone</label><input id="vol-emg-phone" name="emergencyPhone" type="tel"></div>
+            <div class="field"><label for="vol-tshirt">T-shirt Size</label>
+              <select id="vol-tshirt" name="tshirt">
+                <option value="">Select</option>
+                <option>XS</option>
+                <option>S</option>
+                <option>M</option>
+                <option>L</option>
+                <option>XL</option>
+                <option>XXL</option>
+              </select>
+            </div>
+            <div class="field"><label for="vol-transport">Transportation Needs (optional)</label><input id="vol-transport" name="transport" type="text" placeholder="e.g., need pickup from station"></div>
+            <div class="field"><label for="vol-message">Message (optional)</label><textarea id="vol-message" name="message" rows="3"></textarea></div>
+            <div class="field"><label for="vol-cert">Certifications / ID (optional)</label><input id="vol-cert" name="certifications" type="file" multiple></div>
+            <label class="remember"><input type="checkbox" id="vol-consent-waiver" name="consentWaiver" required> I agree to the volunteer waiver and terms</label>
+            <label class="remember"><input type="checkbox" id="vol-consent-bg" name="consentBgCheck"> I consent to a background verification if required</label>
+            <div class="form-actions">
+              <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <section class="events-toolbar" aria-label="Browse Controls">
+      <div class="tabs" role="tablist">
+        <button class="tab active" role="tab" aria-selected="true" data-tab="upcoming">Upcoming</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="ongoing">Ongoing</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="past">Past</button>
+      </div>
+      <div class="filters" role="group" aria-label="Filters">
+        <input type="text" id="filter-search" placeholder="Search events by title, description" aria-label="Search">
+        <select id="filter-category" aria-label="Category filter">
+          <option value="">All Categories</option>
+          <option value="community">Community</option>
+          <option value="environment">Environment</option>
+          <option value="health">Health</option>
+          <option value="education">Education</option>
+          <option value="workshop">Workshop</option>
+        </select>
+        <input type="date" id="filter-from" aria-label="From date">
+        <input type="date" id="filter-to" aria-label="To date">
+        <input type="text" id="filter-location" placeholder="City or venue" aria-label="Location filter">
+        <select id="filter-radius" aria-label="Radius">
+          <option value="any">Any</option>
+          <option value="5">5 km</option>
+          <option value="10">10 km</option>
+          <option value="25">25 km</option>
+          <option value="50">50 km</option>
+        </select>
+        <select id="sort-by" aria-label="Sort">
+          <option value="soonest">Soonest</option>
+          <option value="latest">Latest</option>
+          <option value="popular">Most Popular</option>
+        </select>
+        <button class="btn btn-ghost" id="clear-filters" type="button">Clear</button>
+        <button class="btn btn-secondary" id="use-location" type="button">Use My Location</button>
+        <button class="btn btn-ghost" id="toggle-map-btn" type="button">Map View</button>
+        <a class="btn btn-primary" href="templates.html">Create Template</a>
+        <a class="btn btn-secondary" href="ticket-booking.html">Ticket Booking</a>
+      </div>
+    </section>
+
+    <section class="map-view hidden" id="map-view" aria-label="Map View">
+      <iframe id="map-iframe" title="Event Locations Map" width="100%" height="320" style="border:0;border-radius:14px" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q=Pune&output=embed"></iframe>
+    </section>
+
+    <section class="events-sections" id="events" aria-label="Events Lists">
+      <!-- UPCOMING -->
+      <div class="events-panel" data-panel="upcoming">
+        <button class="scroll-btn left" aria-label="Scroll left">‹</button>
+        <div class="events-grid">
+          <article class="event-card" data-category="community" data-date="2025-10-26" data-location="Pune">
+            <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop" alt="Community cleanup banner">
+            <div class="event-body">
+              <div class="event-head">
+                <h3>Community Cleanup</h3>
+                <span class="chip">Community</span>
+              </div>
+              <ul class="meta">
+                <li>📅 Sat, 26 Oct • 9:00–12:00</li>
+                <li>📍 <a target="_blank" href="https://maps.google.com/?q=Bund+Garden,Pune">Bund Garden, Pune</a></li>
+              </ul>
+              <p class="desc">Join neighbors to collect litter and raise awareness. Gloves and bags provided. Ideal for all ages.</p>
+              <div class="actions">
+                <a class="btn btn-secondary" href="participant-registration.html">Register</a>
+                <a class="btn btn-ghost" href="volunteers.html#login">Volunteer</a>
+                <button class="btn btn-ghost share-btn" data-title="Community Cleanup" data-url="events.html">Share</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="event-card" data-category="festival" data-date="2025-11-15" data-location="Mumbai">
+            <img src="https://images.unsplash.com/photo-1461360370896-922624d12aa1?q=80&w=1200&auto=format&fit=crop" alt="Cultural Fest">
+            <div class="event-body">
+              <div class="event-head">
+                <h3>City Cultural Fest</h3>
+                <span class="chip">Festival</span>
+              </div>
+              <ul class="meta">
+                <li>📅 Sat, 15 Nov • 4:00–10:00</li>
+                <li>📍 <a target="_blank" href="https://maps.google.com/?q=Mumbai">Mumbai</a></li>
+              </ul>
+              <p class="desc">An evening of music, dance, food stalls, and local craft showcases. Families welcome.</p>
+              <div class="actions">
+                <a class="btn btn-secondary" href="participant-registration.html">Register</a>
+                <a class="btn btn-ghost" href="volunteers.html#login">Volunteer</a>
+                <button class="btn btn-ghost share-btn" data-title="City Cultural Fest" data-url="events.html">Share</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="event-card" data-category="music" data-date="2025-12-05" data-location="Bengaluru">
+            <img src="https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=1200&auto=format&fit=crop" alt="Music Night">
+            <div class="event-body">
+              <div class="event-head">
+                <h3>Winter Beats Night</h3>
+                <span class="chip">Music</span>
+              </div>
+              <ul class="meta">
+                <li>📅 Fri, 5 Dec • 6:00–11:00</li>
+                <li>📍 <a target="_blank" href="https://maps.google.com/?q=Bengaluru">Bengaluru</a></li>
+              </ul>
+              <p class="desc">Live bands, open mic, and DJ sets. Seeking stage crew and registration desk volunteers.</p>
+              <div class="actions">
+                <a class="btn btn-secondary" href="participant-registration.html">Register</a>
+                <a class="btn btn-ghost" href="volunteers.html#login">Volunteer</a>
+                <button class="btn btn-ghost share-btn" data-title="Winter Beats Night" data-url="events.html">Share</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="event-card" data-category="cultural" data-date="2025-12-20" data-location="Pune">
+            <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1200&auto=format&fit=crop" alt="College Fest">
+            <div class="event-body">
+              <div class="event-head">
+                <h3>Campus Fest Carnival</h3>
+                <span class="chip">Cultural</span>
+              </div>
+              <ul class="meta">
+                <li>📅 Sat, 20 Dec • 10:00–18:00</li>
+                <li>📍 <a target="_blank" href="https://maps.google.com/?q=Pune">Pune</a></li>
+              </ul>
+              <p class="desc">Competitions, workshops, and food trucks. Volunteers needed for logistics and hospitality.</p>
+              <div class="actions">
+                <a class="btn btn-secondary" href="participant-registration.html">Register</a>
+                <a class="btn btn-ghost" href="volunteers.html#login">Volunteer</a>
+                <button class="btn btn-ghost share-btn" data-title="Campus Fest Carnival" data-url="events.html">Share</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="event-card" data-category="environment" data-date="2025-10-27" data-location="Pune">
+            <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1200&auto=format&fit=crop" alt="Tree planting">
+            <div class="event-body">
+              <div class="event-head">
+                <h3>Tree Planting Drive</h3>
+                <span class="chip">Environment</span>
+              </div>
+              <ul class="meta">
+                <li>📅 Sun, 27 Oct • 8:00–11:00</li>
+                <li>📍 <a target="_blank" href="https://maps.google.com/?q=Sinhagad+Rd,Pune">Sinhagad Rd, Pune</a></li>
+              </ul>
+              <p class="desc">Help increase local green cover. Tools provided; bring a water bottle and cap.</p>
+              <div class="actions">
+                <a class="btn btn-secondary" href="participant-registration.html">Register</a>
+                <a class="btn btn-ghost" href="volunteers.html#login">Volunteer</a>
+                <button class="btn btn-ghost share-btn" data-title="Tree Planting Drive" data-url="events.html">Share</button>
+              </div>
+            </div>
+          </article>
+        </div>
+        <button class="scroll-btn right" aria-label="Scroll right">›</button>
+      </div>
+
+      <!-- ONGOING -->
+      <div class="events-panel hidden" data-panel="ongoing">
+        <button class="scroll-btn left" aria-label="Scroll left">‹</button>
+        <div class="events-grid">
+          <article class="event-card live" data-category="health" data-date="2025-10-28" data-location="Pune">
+            <img src="https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?q=80&w=1200&auto=format&fit=crop" alt="Health camp">
+            <div class="event-body">
+              <div class="event-head">
+                <h3>Community Health Camp</h3>
+                <span class="chip">Health</span>
+                <span class="live">Live Now</span>
+              </div>
+              <ul class="meta">
+                <li>📅 Mon, 28 Oct • 10:00–16:00</li>
+                <li>📍 <a target="_blank" href="https://maps.google.com/?q=PMC+Hall,Pune">PMC Hall, Pune</a></li>
+              </ul>
+              <p class="desc">Free checkups and health awareness sessions with certified doctors.</p>
+              <div class="actions">
+                <a class="btn btn-secondary" href="participant-registration.html">Join</a>
+                <button class="btn btn-ghost share-btn" data-title="Community Health Camp" data-url="events.html">Share</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <!-- PAST -->
+      <div class="events-panel hidden" data-panel="past">
+        <button class="scroll-btn left" aria-label="Scroll left">‹</button>
+        <div class="events-grid">
+          <article class="event-card past" data-category="education" data-date="2025-10-20" data-location="Pune">
+            <img src="https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?q=80&w=1200&auto=format&fit=crop" alt="Coding for kids">
+            <div class="event-body">
+              <div class="event-head">
+                <h3>Coding for Kids</h3>
+                <span class="chip">Education</span>
+              </div>
+              <ul class="meta">
+                <li>📅 Tue, 20 Oct • 16:00–18:00</li>
+                <li>📍 <a target="_blank" href="https://maps.google.com/?q=Tech+Hub,Pune">Tech Hub, Pune</a></li>
+              </ul>
+              <p class="desc">Intro to block programming for ages 8–12. Great turnout and energy!</p>
+              <div class="actions">
+                <a class="btn btn-secondary" href="#">Gallery</a>
+                <a class="btn btn-ghost" href="#">Watch Recording</a>
+                <button class="btn btn-ghost share-btn" data-title="Coding for Kids" data-url="events.html">Share</button>
+                <button class="btn btn-ghost feedback-btn">Leave Feedback</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+
+  <!-- Login Modal Fallback -->
+  <div class="modal" id="login-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="login-title">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-dialog" role="document">
+      <button class="modal-close" aria-label="Close" data-close>✕</button>
+      <div class="modal-content">
+        <div class="login-select" id="login-select">
+          <h2 id="login-title">Login</h2>
+          <p>Please choose your role to continue.</p>
+          <div class="role-actions">
+            <button class="btn btn-primary" data-role="user">Login as Organizer</button>
+            <button class="btn btn-secondary" data-role="participant">Login as Participant</button>
+          </div>
+        </div>
+        <form class="login-form" id="login-form" hidden novalidate>
+          <h3 class="form-title">Login</h3>
+          <p class="role-hint">Role: <button type="button" class="role-toggle" id="role-toggle"><span id="role-label">User</span></button></p>
+          <div class="field">
+            <label for="login-name">Name</label>
+            <input id="login-name" name="name" type="text" required>
+          </div>
+          <div class="field">
+            <label for="login-email">Email</label>
+            <input id="login-email" name="email" type="email" required>
+          </div>
+          <div class="field">
+            <label for="login-address">Address</label>
+            <input id="login-address" name="address" type="text" required>
+          </div>
+          <div class="field">
+            <label for="login-password">Password</label>
+            <input id="login-password" name="password" type="password" required minlength="6">
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" id="back-to-select">Back to selection</button>
+            <button type="submit" class="btn btn-primary">Continue</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer" aria-label="Footer">
+    <div class="footer-grid">
+      <div>
+        <h3>EVENT NEST - NESTING IDEAS,CRAFTING EXPERIENCE <span class="group">&lt;CodeInc&gt;</span></h3>
+        <p>contact@connecthub.example</p>
+        <div class="socials">
+          <a href="#" aria-label="Twitter">Twitter</a>
+          <a href="#" aria-label="Instagram">Instagram</a>
+          <a href="#" aria-label="LinkedIn">LinkedIn</a>
+        </div>
+      </div>
+      <div>
+        <h4>Newsletter</h4>
+        <form class="newsletter" novalidate>
+          <input type="email" placeholder="Your email" aria-label="Email">
+          <button class="btn btn-primary" type="submit">Subscribe</button>
+        </form>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <ul class="links">
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="copyright">  <span id="year"></span> EVENT NEST - NESTING IDEAS,CRAFTING EXPERIENCE • &lt;CodeInc&gt;</p>
+  </footer>
+
+  <script
+    async
+    crossorigin="anonymous"
+    data-clerk-publishable-key="pk_test_a25vd24ta29pLTYyLmNsZXJrLmFjY291bnRzLmRldiQ"
+    src="https://known-koi-62.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+    type="text/javascript"
+  ></script>
+
+  <script>
+    (function() {
+      const MAX_TRIES = 20;
+      const RETRY_DELAY = 200;
+
+      function updateNav() {
+        const loginLink = document.getElementById('login-link');
+        const loginText = document.getElementById('login-text');
+        if (!loginLink) return;
+
+        const user = window.Clerk && window.Clerk.user;
+
+        // Reset any previous click handler
+        loginLink.onclick = null;
+
+        if (user) {
+          // Signed in: show Logout and sign out via Clerk
+          loginLink.href = '#';
+          if (loginText) loginText.textContent = 'Logout';
+          else loginLink.textContent = 'Logout';
+
+          loginLink.onclick = async (event) => {
+            event.preventDefault();
+            try {
+              if (window.Clerk) {
+                await window.Clerk.load();
+                await window.Clerk.signOut();
+              }
+            } catch (err) {
+              console.error('Failed to sign out via Clerk on events page:', err);
+            } finally {
+              window.location.href = 'index.html';
+            }
+          };
+        } else {
+          // Signed out: simple Login link
+          loginLink.href = 'login.html';
+          if (loginText) loginText.textContent = 'Login';
+          else loginLink.textContent = 'Login';
+        }
+      }
+
+      function startClerkNav() {
+        let tries = 0;
+
+        const tryLoad = async () => {
+          tries++;
+
+          if (window.Clerk) {
+            try {
+              await window.Clerk.load();
+            } catch (err) {
+              console.error('Failed to load Clerk on events page:', err);
+            }
+
+            updateNav();
+          } else if (tries < MAX_TRIES) {
+            setTimeout(tryLoad, RETRY_DELAY);
+          } else {
+            updateNav();
+          }
+        };
+
+        tryLoad();
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startClerkNav);
+      } else {
+        startClerkNav();
+      }
+    })();
+  </script>
+
+  <script src="app.js"></script>
+</body>
+</html>

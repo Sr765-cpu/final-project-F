@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Templates | CodeInc</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Lato:wght@300;400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* Basic Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Poppins', 'Lato', 'Inter', sans-serif;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    /* Header */
+    header {
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 15px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    
+    nav a {
+      margin-left: 20px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+    }
+    
+    nav a.active {
+      color: #2563eb;
+    }
+    
+    /* Buttons - vibrant theme */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      letter-spacing: .03em;
+      background: linear-gradient(135deg, rgba(191,0,255,.22), rgba(255,105,180,.22));
+      color: #f9fafb;
+      box-shadow: 0 8px 20px rgba(0,0,0,.45);
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 26px rgba(0,0,0,.6);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--brand, #BF00FF), var(--brand-2, #FF69B4));
+      color: #fff;
+      border-color: rgba(255,255,255,.35);
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #FF69B4, #BF00FF);
+      box-shadow: 0 14px 30px rgba(191,0,255,.7);
+    }
+    
+    .btn-ghost {
+      background: rgba(15,23,42,.7);
+      border-color: rgba(255,255,255,.25);
+      color: #e5e7eb;
+    }
+    
+    .btn-ghost:hover {
+      background: rgba(191,0,255,.22);
+      border-color: rgba(255,255,255,.45);
+    }
+    
+    /* Toolbar */
+    .toolbar {
+      margin: 30px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
+    }
+    
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 250px;
+    }
+    
+    .search-box i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af;
+    }
+    
+    .search-box input {
+      width: 100%;
+      padding: 10px 15px 10px 40px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .filters select,
+    .filters input {
+      padding: 8px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    /* Cards Grid */
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin: 30px 0;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    /* Vibrant theme overrides on templates page */
+    .templates-page .card {
+      background: linear-gradient(135deg,
+        rgba(191, 0, 255, 0.45),
+        rgba(37, 99, 235, 0.4),
+        rgba(15, 23, 42, 0.98)
+      );
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.55);
+    }
+
+    .templates-page .card h3 {
+      color: #f9fafb;
+    }
+
+    .templates-page .card p {
+      color: #e5e7eb;
+    }
+
+    .templates-page .card-meta {
+      color: #c4b5fd;
+    }
+
+    .templates-page .card-category {
+      background: rgba(15, 23, 42, 0.9);
+      color: #fdf2ff;
+    }
+    
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    }
+    
+    .card-image {
+      height: 160px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+    
+    .card-category {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255,255,255,0.9);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .card-content {
+      padding: 16px;
+    }
+    
+    .card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      color: #111827;
+    }
+    
+    .card p {
+      color: #4b5563;
+      font-size: 14px;
+      margin-bottom: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 12px;
+    }
+    
+    .card-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .card-actions {
+      padding: 0 16px 16px;
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+    
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #d1d5db;
+      color: #374151;
+    }
+    
+    /* Highlight Generate Summary button specifically */
+    .templates-page .use-btn {
+      background: linear-gradient(135deg, #FF69B4, #BF00FF);
+      color: #ffffff;
+      border-color: rgba(255,255,255,.7);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .templates-page .use-btn:hover {
+      background: linear-gradient(135deg, #FFD700, #FF69B4);
+      box-shadow: 0 14px 30px rgba(255,105,180,.7);
+    }
+    
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal.show {
+      display: flex;
+    }
+    
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+    }
+    
+    .modal-dialog {
+      background: white;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      z-index: 10;
+      margin: 20px;
+    }
+    
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #6b7280;
+    }
+    
+    .modal-content {
+      padding: 30px;
+    }
+    
+    .modal h2 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #111827;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #374151;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .form-group textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 24px;
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6b7280;
+      grid-column: 1 / -1;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .filters {
+        flex-direction: column;
+      }
+      
+      .templates-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    </style>
+</head>
+<body>
+  <main class="templates-page" style="max-width:1200px;margin:1rem auto;padding:0 1rem;">
+    <section class="about" aria-label="Templates Intro">
+      <h1>Event Templates</h1>
+      <p>Browse, create, and reuse templates for your events.</p>
+    </section>
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="tpl-search" placeholder="Search templates...">
+      </div>
+      <div class="filters">
+        <select id="tpl-category" aria-label="Filter by category">
+          <option value="">All Categories</option>
+          <option value="tech">Tech Event</option>
+          <option value="festival">Festival</option>
+          <option value="workshop">Workshop</option>
+          <option value="meetup">Meetup</option>
+          <option value="conference">Conference</option>
+          <option value="community">Community</option>
+        </select>
+        <input type="date" id="tpl-date" aria-label="Date">
+        <input type="text" id="tpl-location" placeholder="Location" aria-label="Location">
+        <select id="tpl-sort" aria-label="Sort by">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="title-asc">Title (A-Z)</option>
+          <option value="title-desc">Title (Z-A)</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="create-template-btn">
+        <i class="fas fa-plus"></i> Create Template
+      </button>
+    </div>
+
+    <!-- Templates Grid -->
+    <div id="templates-list" class="templates-grid">
+      <!-- Templates will be loaded here -->
+    </div>
+  </main>
+
+  <!-- Create/Edit Template Modal -->
+  <div class="modal" id="create-template-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ct-title">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-dialog" role="document">
+      <button class="modal-close" aria-label="Close" data-close>✕</button>
+      <div class="modal-content">
+        <h2 id="ct-title">Create New Template</h2>
+        <form id="create-template-card-form">
+          <div class="form-group">
+            <label for="ct-title-input">Title <span class="required">*</span></label>
+            <input type="text" id="ct-title-input" required>
+          </div>
+          <div class="form-group">
+            <label for="ct-desc">Description <span class="required">*</span></label>
+            <textarea id="ct-desc" rows="3" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="ct-category">Category <span class="required">*</span></label>
+            <select id="ct-category" required>
+              <option value="tech">Tech Event</option>
+              <option value="festival">Festival</option>
+              <option value="workshop">Workshop</option>
+              <option value="meetup">Meetup</option>
+              <option value="conference">Conference</option>
+              <option value="community">Community</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ct-date">Date <span class="required">*</span></label>
+            <input type="date" id="ct-date" required>
+          </div>
+          <div class="form-group">
+            <label for="ct-location">Location <span class="required">*</span></label>
+            <input type="text" id="ct-location" required>
+          </div>
+          <div class="form-group">
+            <label for="ct-organizer">Organizer <span class="required">*</span></label>
+            <input type="text" id="ct-organizer" required>
+          </div>
+          <div class="form-group">
+            <label for="ct-image">Image URL</label>
+            <input type="url" id="ct-image" placeholder="https://example.com/banner.jpg">
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Template</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Template card component
+    function Card({ id, title, description, category, date, location, organizer, images = [] }) {
+      const categoryIcons = {
+        tech: 'laptop-code',
+        festival: 'music',
+        workshop: 'laptop-code',
+        meetup: 'users',
+        conference: 'microphone',
+        community: 'users'
+      };
+      
+      // Normalize images: support array or single string
+      const imgUrl = Array.isArray(images) ? (images[0] || '') : (images || '');
+
+      // Format date
+      const formattedDate = new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      
+      return `
+        <div class="card" data-id="${id}">
+          <div class="card-image" style="background-image: url('${imgUrl || 'https://via.placeholder.com/400x200?text=Event+Image'}')">
+            <span class="card-category">
+              <i class="fas fa-${categoryIcons[category]}"></i>
+              ${category.charAt(0).toUpperCase() + category.slice(1)}
+            </span>
+          </div>
+          <div class="card-content">
+            <h3>${title}</h3>
+            <p>${description}</p>
+            <div class="card-meta">
+              <span><i class="far fa-calendar"></i> ${formattedDate}</span>
+              <span><i class="fas fa-map-marker-alt"></i> ${location}</span>
+              <span><i class="far fa-user"></i> ${organizer}</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="btn btn-sm btn-outline use-btn">Generate Summary</button>
+            <button class="btn btn-sm btn-ghost edit-btn">Edit</button>
+            <button class="btn btn-sm btn-ghost delete-btn">Delete</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', () => {
+      // Load templates from localStorage or use sample data
+      const templates = JSON.parse(localStorage.getItem('templates')) || [];
+      const templatesList = document.getElementById('templates-list');
+      
+      // Sample data for initial load if no templates exist
+      if (templates.length === 0) {
+        const sampleTemplates = [
+          {
+            id: '1',
+            title: 'Tech Workshop',
+            description: 'A hands-on workshop for learning modern web development technologies.',
+            category: 'workshop',
+            date: '2023-12-15',
+            location: 'Online',
+            organizer: 'Code Academy',
+            images: ['https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80']
+          },
+          {
+            id: '2',
+            title: 'Startup Meetup',
+            description: 'Networking event for startup founders and investors.',
+            category: 'meetup',
+            date: '2023-11-20',
+            location: 'Downtown Hub',
+            organizer: 'Startup Network',
+            images: ['https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80']
+          }
+        ];
+        
+        localStorage.setItem('templates', JSON.stringify(sampleTemplates));
+        templates.push(...sampleTemplates);
+      }
+      
+      // Render templates
+      function renderTemplates(templatesToRender = templates) {
+        if (templatesToRender.length === 0) {
+          templatesList.innerHTML = '<div class="empty-state">No templates found. Create your first template!</div>';
+          return;
+        }
+        
+        templatesList.innerHTML = templatesToRender.map(template => 
+          Card({
+            ...template,
+            date: template.date || new Date().toISOString().split('T')[0]
+          })
+        ).join('');
+        
+        // Add event listeners to buttons
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const card = e.target.closest('.card');
+            const templateId = card.dataset.id;
+            editTemplate(templateId);
+          });
+        });
+        
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const card = e.target.closest('.card');
+            const templateId = card.dataset.id;
+            if (confirm('Are you sure you want to delete this template?')) {
+              deleteTemplate(templateId);
+            }
+          });
+        });
+        
+        document.querySelectorAll('.use-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const card = e.target.closest('.card');
+            const templateId = card.dataset.id;
+            useTemplate(templateId);
+          });
+        });
+      }
+      
+      // Edit template
+      function editTemplate(templateId) {
+        const template = templates.find(t => t.id === templateId);
+        if (!template) return;
+        
+        // Set form values
+        document.getElementById('ct-title-input').value = template.title;
+        document.getElementById('ct-desc').value = template.description;
+        document.getElementById('ct-category').value = template.category;
+        document.getElementById('ct-date').value = template.date;
+        document.getElementById('ct-location').value = template.location;
+        document.getElementById('ct-organizer').value = template.organizer;
+        document.getElementById('ct-image').value = (template.images && template.images[0]) || '';
+        
+        // Update form to edit mode
+        const form = document.getElementById('create-template-card-form');
+        form.dataset.editId = templateId;
+        document.getElementById('ct-title').textContent = 'Edit Template';
+        
+        // Show modal
+        document.getElementById('create-template-modal').classList.add('show');
+      }
+      
+      // Delete template
+      function deleteTemplate(templateId) {
+        const index = templates.findIndex(t => t.id === templateId);
+        if (index === -1) return;
+        
+        templates.splice(index, 1);
+        localStorage.setItem('templates', JSON.stringify(templates));
+        renderTemplates();
+      }
+      
+      // Generate descriptive summary for a template in a separate page
+      function useTemplate(templateId) {
+        try {
+          localStorage.setItem('eventnest_summary_template_id', templateId);
+        } catch (e) {
+          console.error('Failed to store summary template id', e);
+        }
+        window.location.href = 'template-summary.html';
+      }
+      
+      // Initial render
+      renderTemplates();
+      
+      // Modal handling
+      const modal = document.getElementById('create-template-modal');
+      const form = document.getElementById('create-template-card-form');
+      
+      // Open modal for new template
+      document.getElementById('create-template-btn').addEventListener('click', () => {
+        form.reset();
+        form.removeAttribute('data-edit-id');
+        document.getElementById('ct-title').textContent = 'Create New Template';
+        modal.classList.add('show');
+      });
+      
+      // Close modal when clicking outside or on close button
+      document.querySelectorAll('[data-close]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          modal.classList.remove('show');
+        });
+      });
+      
+      // Form submission
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const imageUrl = document.getElementById('ct-image').value.trim();
+
+        const templateData = {
+          id: form.dataset.editId || Date.now().toString(),
+          title: document.getElementById('ct-title-input').value,
+          description: document.getElementById('ct-desc').value,
+          category: document.getElementById('ct-category').value,
+          date: document.getElementById('ct-date').value,
+          location: document.getElementById('ct-location').value,
+          organizer: document.getElementById('ct-organizer').value,
+          images: imageUrl ? [imageUrl] : []
+        };
+        
+        if (form.dataset.editId) {
+          // Update existing template
+          const index = templates.findIndex(t => t.id === form.dataset.editId);
+          if (index !== -1) {
+            templates[index] = { ...templates[index], ...templateData };
+          }
+        } else {
+          // Add new template
+          templates.push(templateData);
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('templates', JSON.stringify(templates));
+        
+        // Refresh the list and close modal
+        renderTemplates();
+        modal.classList.remove('show');
+      });
+      
+      // Search functionality
+      const searchInput = document.getElementById('tpl-search');
+      searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredTemplates = templates.filter(template => 
+          template.title.toLowerCase().includes(searchTerm) || 
+          template.description.toLowerCase().includes(searchTerm)
+        );
+        renderTemplates(filteredTemplates);
+      });
+      
+      // Category filter
+      const categoryFilter = document.getElementById('tpl-category');
+      categoryFilter.addEventListener('change', (e) => {
+        const category = e.target.value;
+        if (!category) {
+          renderTemplates();
+          return;
+        }
+        
+        const filteredTemplates = templates.filter(template => 
+          template.category === category
+        );
+        renderTemplates(filteredTemplates);
+      });
+      
+      // Sort functionality
+      const sortSelect = document.getElementById('tpl-sort');
+      sortSelect.addEventListener('change', (e) => {
+        const sortBy = e.target.value;
+        const sortedTemplates = [...templates];
+        
+        switch (sortBy) {
+          case 'newest':
+            sortedTemplates.sort((a, b) => new Date(b.date) - new Date(a.date));
+            break;
+          case 'oldest':
+            sortedTemplates.sort((a, b) => new Date(a.date) - new Date(b.date));
+            break;
+          case 'title-asc':
+            sortedTemplates.sort((a, b) => a.title.localeCompare(b.title));
+            break;
+          case 'title-desc':
+            sortedTemplates.sort((a, b) => b.title.localeCompare(a.title));
+            break;
+        }
+        
+        renderTemplates(sortedTemplates);
+      });
+    });
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>

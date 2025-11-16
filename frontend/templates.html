@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EventNest – Templates</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* Wrapper so templates.html uses the same layout as templates-clean.html but keeps URL stable */
+    .templates-wrapper{max-width:1200px;margin:1rem auto;padding:0 1rem}
+  </style>
+</head>
+<body>
+  <header class="navbar" role="navigation" aria-label="Primary">
+    <div class="nav-inner">
+      <a class="brand" href="index.html"><span class="group">&lt;CodeInc&gt;</span></a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <nav id="nav-links" class="nav-links">
+        <a href="index.html#home">Home</a>
+        <a href="events.html">Events</a>
+        <a href="templates.html">Templates</a>
+        <a href="volunteers.html">Volunteers</a>
+        <a href="dashboard2.html">Dashboard</a>
+        <a href="communication.html">Communication</a>
+        <div class="login-nav" id="login-nav">
+          <a href="login.html" id="login-link"><span id="login-text">Login</span></a>
+          <div class="login-dropdown" id="login-dropdown" hidden>
+            <div class="login-select-dd" id="login-select-dd">
+              <h3>Login</h3>
+              <div class="role-actions">
+                <button class="btn btn-primary" data-role-dd="user">Login as Organizer</button>
+                <button class="btn btn-secondary" data-role-dd="participant">Login as Participant</button>
+              </div>
+            </div>
+            <form class="login-form-dd" id="login-form-dd" hidden novalidate>
+              <p class="role-hint">Role: <button type="button" class="role-toggle" id="role-toggle-dd"><span id="role-label-dd">User</span></button></p>
+              <div class="field">
+                <label for="dd-name">Name</label>
+                <input id="dd-name" name="name" type="text" required>
+              </div>
+              <div class="field">
+                <label for="dd-email">Email</label>
+                <input id="dd-email" name="email" type="email" required>
+              </div>
+              <div class="field">
+                <label for="dd-address">Address</label>
+                <input id="dd-address" name="address" type="text" required>
+              </div>
+              <div class="field">
+                <label for="dd-password">Password</label>
+                <input id="dd-password" name="password" type="password" required minlength="6">
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn btn-ghost" id="back-to-select-dd">Back to selection</button>
+                <button type="submit" class="btn btn-primary">Continue</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Reuse the templates-clean layout and logic directly here -->
+  <main class="templates-wrapper">
+    <iframe src="templates-clean.html" title="Event Templates" style="width:100%;min-height:80vh;border:none;border-radius:16px;overflow:hidden;background:transparent"></iframe>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
