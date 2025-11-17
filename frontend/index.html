@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="aurora-body">
   <header class="navbar" role="navigation" aria-label="Primary">
     <div class="nav-inner">
       <a class="brand" href="#"> <span class="group">&lt;CodeInc&gt;</span></a>
@@ -32,11 +32,12 @@
 
   <main id="home" class="layout">
     <section class="hero" aria-label="Hero">
+      <div id="hero-aurora-root"></div>
       <div class="hero-content">
         <div class="hero-panel">
           <h1>EVENT NEST - NESTING IDEAS,CRAFTING EXPERIENCE</h1>
           <p class="tagline">Discover, volunteer, and build impact with local happenings.</p>
-          <img src="bg12.png" alt="bg12.png">
+          <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1400&q=80" alt="Vibrant crowd at a night event with lights" />
           <p class="group">By &lt;CodeInc&gt;</p>
           <div class="cta-group">
               <a class="btn btn-primary get-started" id="get-started-btn" href="event.html">Get Started</a>
@@ -108,21 +109,25 @@
           <img src="https://images.unsplash.com/photo-1444212477490-ca407925329e?q=80&w=1200&auto=format&fit=crop" alt="Community cleanup">
           <h3>Community Cleanup</h3>
           <a class="btn btn-secondary" href="participant-registration.html">Register</a>
+          <a class="btn btn-ghost" href="gallery.html?event=Community%20Cleanup">Gallery</a>
         </article>
         <article class="eh-card">
           <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1200&auto=format&fit=crop" alt="Tree planting drive">
           <h3>Tree Planting Drive</h3>
           <a class="btn btn-secondary" href="participant-registration.html">Register</a>
+          <a class="btn btn-ghost" href="gallery.html?event=Tree%20Planting%20Drive">Gallery</a>
         </article>
         <article class="eh-card">
           <img src="https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?q=80&w=1200&auto=format&fit=crop" alt="Health camp">
           <h3>Health Camp</h3>
           <a class="btn btn-secondary" href="participant-registration.html">Register</a>
+          <a class="btn btn-ghost" href="gallery.html?event=Health%20Camp">Gallery</a>
         </article>
         <article class="eh-card">
           <img src="https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?q=80&w=1200&auto=format&fit=crop" alt="Coding for kids">
           <h3>Coding for Kids</h3>
           <a class="btn btn-secondary" href="participant-registration.html">Register</a>
+          <a class="btn btn-ghost" href="gallery.html?event=Coding%20for%20Kids">Gallery</a>
         </article>
       </div>
     </section>
@@ -403,6 +408,46 @@
         document.addEventListener('DOMContentLoaded', startClerkNav);
       } else {
         startClerkNav();
+      }
+    })();
+  </script>
+  <!-- React aurora background for hero -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    (function(){
+      const AuroraBackground = () => {
+        const blobs = [0,1,2,3];
+        const stars = Array.from({ length: 48 }, (_, i) => i);
+        return (
+          <div className="aurora-react-layer" aria-hidden="true">
+            {blobs.map(i => (
+              <div key={i} className={`aurora-blob aurora-blob-${i}`} />
+            ))}
+            <div className="aurora-shimmer" />
+            <div className="aurora-stars">
+              {stars.map(i => (
+                <span
+                  key={i}
+                  className="aurora-star"
+                  style={{
+                    "--sx": Math.random(),
+                    "--sy": Math.random(),
+                    "--sd": 12 + Math.random() * 14
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        );
+      };
+
+      const rootEl = document.getElementById('hero-aurora-root');
+      if (rootEl && window.ReactDOM && window.ReactDOM.createRoot) {
+        const root = ReactDOM.createRoot(rootEl);
+        root.render(<AuroraBackground />);
       }
     })();
   </script>

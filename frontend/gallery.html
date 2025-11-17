@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Event Gallery • EVENT NEST</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="aurora-body">
+  <header class="navbar" role="navigation" aria-label="Primary">
+    <div class="nav-inner">
+      <a class="brand" href="index.html"><span class="group">&lt;CodeInc&gt;</span></a>
+      <nav id="nav-links" class="nav-links">
+        <a href="index.html#home">Home</a>
+        <a href="events.html">Events</a>
+        <a href="gallery.html" aria-current="page">Gallery</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="layout" style="max-width: 1160px; grid-template-areas: 'hero' 'about';">
+    <section class="hero" aria-label="Event gallery" style="min-height:auto; margin-bottom: 1rem;">
+      <div class="hero-content" style="position:relative; inset:auto; padding:1.8rem 1.6rem;">
+        <div class="hero-panel" style="max-width:100%; padding:1.8rem 1.6rem;">
+          <h1 id="gallery-title">Event Gallery</h1>
+          <p class="tagline" id="gallery-subtitle">See memories shared by your community.</p>
+          <p class="group">Add photos and short descriptions for each event.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="about" aria-label="Add to gallery" style="grid-area:about; margin-top:0;">
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-body">
+          <h2>Add a memory</h2>
+          <p class="muted">Paste an image URL and a short description for this event. Items are stored only in your browser (local device).</p>
+          <form id="gallery-form" class="login-form" novalidate>
+            <div class="field">
+              <label for="g-event">Event name</label>
+              <input id="g-event" name="event" type="text" required placeholder="e.g., Community Cleanup">
+            </div>
+            <div class="field">
+              <label for="g-image">Image URL</label>
+              <input id="g-image" name="image" type="url" required placeholder="https://images.example.com/event.jpg">
+            </div>
+            <div class="field">
+              <label for="g-desc">Description</label>
+              <textarea id="g-desc" name="description" rows="3" required placeholder="How was the event? What happened there?"></textarea>
+            </div>
+            <div class="field">
+              <label for="g-author">Your name (optional)</label>
+              <input id="g-author" name="author" type="text" placeholder="Add your name or leave blank">
+            </div>
+            <div class="booking-actions" style="margin-top: .75rem; justify-content:flex-start;">
+              <button type="submit" class="btn btn-primary">Save to Gallery</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <section aria-label="Gallery items">
+        <h2 style="margin-bottom:.75rem;">Gallery items</h2>
+        <div id="gallery-grid" class="card-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1rem;"></div>
+        <p id="gallery-empty" class="muted" style="margin-top:.5rem;">No items yet. Be the first to add a memory for this event.</p>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    (function(){
+      const params = new URLSearchParams(window.location.search);
+      const eventFromQuery = params.get('event') || '';
+      const titleEl = document.getElementById('gallery-title');
+      const subtitleEl = document.getElementById('gallery-subtitle');
+      const eventInput = document.getElementById('g-event');
+      const form = document.getElementById('gallery-form');
+      const grid = document.getElementById('gallery-grid');
+      const emptyEl = document.getElementById('gallery-empty');
+
+      const STORAGE_KEY = 'eventnest_gallery_items';
+
+      function loadItems(){
+        try{
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if(!raw) return [];
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        }catch(e){ return []; }
+      }
+
+      function saveItems(items){
+        try{
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        }catch(e){ console.error('Failed to save gallery items', e); }
+      }
+
+      function render(){
+        const items = loadItems();
+        const filtered = eventFromQuery ? items.filter(it => (it.event||'').toLowerCase() === eventFromQuery.toLowerCase()) : items;
+
+        if(!filtered.length){
+          grid.innerHTML = '';
+          emptyEl.style.display = 'block';
+          return;
+        }
+
+        emptyEl.style.display = 'none';
+        grid.innerHTML = filtered.map(item => {
+          const safeEvent = (item.event||'').substring(0,80);
+          const safeDesc = (item.description||'').substring(0,240);
+          const safeAuthor = (item.author||'').substring(0,60);
+          const url = item.image || '';
+          return `
+            <article class="card">
+              <img src="${url}" alt="${safeEvent || 'Event image'}" />
+              <div class="card-body">
+                <h3>${safeEvent || 'Event memory'}</h3>
+                <p>${safeDesc || ''}</p>
+                ${safeAuthor ? `<p class="muted">Shared by ${safeAuthor}</p>` : ''}
+              </div>
+            </article>
+          `;
+        }).join('');
+      }
+
+      if(eventFromQuery){
+        titleEl.textContent = eventFromQuery + ' • Gallery';
+        subtitleEl.textContent = 'Memories and moments from ' + eventFromQuery + '.';
+        eventInput.value = eventFromQuery;
+      }
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        const event = eventInput.value.trim();
+        const image = document.getElementById('g-image').value.trim();
+        const description = document.getElementById('g-desc').value.trim();
+        const author = document.getElementById('g-author').value.trim();
+
+        if(!event || !image || !description){
+          alert('Please fill event name, image URL, and description.');
+          return;
+        }
+
+        const items = loadItems();
+        items.unshift({
+          id: Date.now(),
+          event,
+          image,
+          description,
+          author,
+          createdAt: new Date().toISOString()
+        });
+        saveItems(items);
+        form.reset();
+        if(eventFromQuery){ eventInput.value = eventFromQuery; }
+        render();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
