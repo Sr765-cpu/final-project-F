@@ -209,6 +209,7 @@
             <div class="field">
               <label for="eventName">Event</label>
               <input id="eventName" name="eventName" type="text" placeholder="Event name" required>
+              <input id="eventId" name="eventId" type="hidden">
             </div>
             <div class="field-row">
               <div class="field">
@@ -324,15 +325,110 @@
         });
       });
 
-      form.addEventListener('submit', function(e){
+      const API_BASE = 'http://localhost:4000/api';
+
+      function getQueryParams(){
+        try { return new URLSearchParams(window.location.search); } catch { return new URLSearchParams(); }
+      }
+
+      async function hydrateEventFromQuery(){
+        const params = getQueryParams();
+        const eventIdInput = document.getElementById('eventId');
+        const eventNameInput = document.getElementById('eventName');
+        const eventDateInput = document.getElementById('eventDate');
+        const eventLocationInput = document.getElementById('eventLocation');
+
+        const eventId = params.get('eventId');
+        if(!eventId || !eventIdInput) return;
+
+        try {
+          const res = await fetch(`${API_BASE}/events`);
+          const data = await res.json();
+          const events = Array.isArray(data.events) ? data.events : [];
+          const match = events.find(ev => ev.id === eventId);
+          if(!match) return;
+
+          eventIdInput.value = match.id;
+          if(eventNameInput){
+            eventNameInput.value = match.title || '';
+            eventNameInput.readOnly = true;
+          }
+          if(eventDateInput && match.start){
+            eventDateInput.value = (match.start || '').slice(0,10);
+          }
+          if(eventLocationInput){
+            eventLocationInput.value = match.city || '';
+          }
+        } catch (e) {
+          console.error('Failed to hydrate event on registration page:', e);
+        }
+      }
+
+      form.addEventListener('submit', async function(e){
         e.preventDefault();
         if(!form.checkValidity()){
           form.reportValidity();
           return;
         }
-        alert('Registration submitted! (Demo only, not yet saved to backend)');
+
+        const fd = new FormData(form);
+        const firstName = (fd.get('firstName')||'').toString().trim();
+        const lastName = (fd.get('lastName')||'').toString().trim();
+        const email = (fd.get('email')||'').toString().trim();
+        const ticketRaw = (fd.get('ticketType')||'').toString();
+        const sessions = fd.getAll('sessions') || [];
+        const meal = (fd.get('meal')||'').toString();
+        const diet = (fd.get('diet')||'').toString().trim();
+        const accessibility = (fd.get('accessibility')||'').toString().trim();
+        const referral = (fd.get('referral')||'').toString();
+        const eventId = (fd.get('eventId')||'').toString().trim();
+
+        const ticketMap = {
+          vip: 'VIP',
+          general: 'General',
+          student: 'Student',
+        };
+        const ticketKey = ticketRaw.toLowerCase();
+        const ticketType = ticketMap[ticketKey] || 'General';
+
+        const preferences = JSON.stringify({
+          sessions,
+          meal,
+          diet,
+          accessibility,
+          referral,
+        });
+
+        // If we have a concrete eventId, create a real RSVP tied to that event
+        if(eventId){
+          try {
+            const name = `${firstName} ${lastName}`.trim() || firstName || lastName || email;
+            const payload = { name, email, ticketType, preferences };
+            const res = await fetch(`${API_BASE}/events/${eventId}/rsvp`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            if(!res.ok){
+              throw new Error(data && data.message ? data.message : 'Failed to submit RSVP');
+            }
+            alert('Registration submitted! You are now registered for this event.');
+            window.location.href = 'attendees.html';
+            return;
+          } catch (err) {
+            console.error('Registration RSVP error:', err);
+            alert(err.message || 'Unable to complete registration right now.');
+            return;
+          }
+        }
+
+        // Fallback demo behaviour when no eventId is available
+        alert('Registration submitted! (Demo only, not yet linked to a specific event)');
         window.location.href = 'index.html';
       });
+
+      hydrateEventFromQuery();
     })();
   </script>
 </body>

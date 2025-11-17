@@ -162,22 +162,93 @@
   </footer>
 
   <script>
-    // Frontend-only submission handlers with basic validation feedback
+    const API_BASE = 'http://localhost:4000/api';
+
     function showToast(msg){ alert(msg); }
-    document.getElementById('resource-booking-form').addEventListener('submit', function(e){
-      e.preventDefault();
-      const required = ['res-type','date','start-time','end-time','purpose','contact-name','contact-email'];
-      for(const id of required){
-        const el = document.getElementById(id);
-        if(!el.value){ el.focus(); showToast('Please fill out required fields.'); return; }
-      }
-      showToast('Booking request submitted (frontend demo). Redirecting to Events...');
-      window.location.href = 'events.html';
-    });
-    document.getElementById('ticket-form').addEventListener('submit', function(e){
-      e.preventDefault();
-      showToast('Ticket details saved (frontend demo).');
-    });
+
+    const resourceForm = document.getElementById('resource-booking-form');
+    const ticketForm = document.getElementById('ticket-form');
+
+    if (resourceForm) {
+      resourceForm.addEventListener('submit', async function(e){
+        e.preventDefault();
+        const required = ['res-type','date','start-time','end-time','purpose','contact-name','contact-email'];
+        for(const id of required){
+          const el = document.getElementById(id);
+          if(!el.value){ el.focus(); showToast('Please fill out required fields.'); return; }
+        }
+
+        const fd = new FormData(resourceForm);
+        const payload = {
+          resourceType: fd.get('resourceType') || '',
+          quantity: fd.get('quantity'),
+          date: fd.get('date') || '',
+          startTime: fd.get('startTime') || '',
+          endTime: fd.get('endTime') || '',
+          duration: fd.get('duration') || '',
+          purpose: fd.get('purpose') || '',
+          contactName: fd.get('contactName') || '',
+          contactEmail: fd.get('contactEmail') || '',
+          contactPhone: fd.get('contactPhone') || '',
+          specialReq: fd.get('specialReq') || '',
+        };
+
+        try {
+          const res = await fetch(`${API_BASE}/bookings/resources`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data && data.message ? data.message : 'Failed to submit booking');
+          }
+          showToast('Booking request submitted successfully.');
+          resourceForm.reset();
+          window.location.href = 'events.html';
+        } catch (err) {
+          console.error('Resource booking error:', err);
+          showToast(err.message || 'Unable to submit booking right now.');
+        }
+      });
+    }
+
+    if (ticketForm) {
+      ticketForm.addEventListener('submit', async function(e){
+        e.preventDefault();
+        const fd = new FormData(ticketForm);
+        const ticketType = fd.get('ticketType') || '';
+        if (!ticketType) {
+          showToast('Please select a ticket type before saving.');
+          return;
+        }
+
+        const payload = {
+          ticketType,
+          ticketPrice: fd.get('ticketPrice'),
+          ticketQty: fd.get('ticketQty'),
+          ticketRelease: fd.get('ticketRelease'),
+          ticketNotes: fd.get('ticketNotes'),
+        };
+
+        try {
+          const res = await fetch(`${API_BASE}/bookings/tickets`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data && data.message ? data.message : 'Failed to save ticket details');
+          }
+          showToast('Ticket details saved successfully.');
+          ticketForm.reset();
+        } catch (err) {
+          console.error('Ticket config error:', err);
+          showToast(err.message || 'Unable to save ticket details right now.');
+        }
+      });
+    }
   </script>
 </body>
 </html>

@@ -1,4 +1,5 @@
 import express from 'express';
+import http from 'http';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
@@ -11,7 +12,9 @@ import crypto from 'crypto';
 
 // Import routes and middleware
 import authRoutes from './routes/auth.js';
-import { authenticate, optionalAuth } from './middleware/auth.js';
+import chatRoutes from './routes/chat.js';
+import { initSocket } from './socket.js';
+import { authenticate, optionalAuth, authorize } from './middleware/auth.js';
 import { eventValidation, rsvpValidation, volunteerValidation, validate } from './utils/validation.js';
 
 dotenv.config();
@@ -72,6 +75,7 @@ app.get('/api/health', (req, res) => {
 
 // Auth routes
 app.use('/api/auth', authRoutes);
+app.use('/api/chat', chatRoutes);
 
 // ===== Events CRUD (file-based storage for now) =====
 const __filename = fileURLToPath(import.meta.url);
@@ -128,7 +132,7 @@ app.put('/api/events/:id', async (req, res) => {
 app.post('/api/events/:id/rsvp', optionalAuth, rsvpValidation, validate, async (req, res) => {
   try{
     const { id } = req.params;
-    const { name, email, message } = req.body || {};
+    const { name, email, message, ticketType, preferences } = req.body || {};
     
     // Check if event exists
     const event = await prisma.event.findUnique({ where: { id } });
@@ -151,6 +155,8 @@ app.post('/api/events/:id/rsvp', optionalAuth, rsvpValidation, validate, async (
         name,
         email,
         message: message || '',
+        ticketType: ticketType || 'General',
+        preferences: preferences || null,
         status: 'confirmed'
       }
     });
@@ -165,6 +171,124 @@ app.post('/api/events/:id/rsvp', optionalAuth, rsvpValidation, validate, async (
       return res.status(409).json({ message: 'You have already RSVP\'d to this event' });
     }
     res.status(500).json({ message:'Server error' });
+  }
+});
+
+// Get attendees for a specific event (organizer only)
+app.get('/api/events/:id/attendees', authenticate, authorize('user'), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const event = await prisma.event.findUnique({ where: { id } });
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    const rsvps = await prisma.rSVP.findMany({
+      where: { eventId: id },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    res.json({
+      event: {
+        id: event.id,
+        title: event.title,
+        category: event.category,
+        city: event.city,
+        start: event.start,
+        end: event.end,
+      },
+      attendees: rsvps,
+    });
+  } catch (e) {
+    console.error('Get attendees error:', e);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Check-in attendee for an event (organizer only)
+app.post('/api/events/:id/checkin', authenticate, authorize('user'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rsvpId, email, method } = req.body || {};
+
+    const event = await prisma.event.findUnique({ where: { id } });
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    let rsvp = null;
+    if (rsvpId) {
+      rsvp = await prisma.rSVP.findUnique({ where: { id: rsvpId } });
+      if (rsvp && rsvp.eventId !== id) {
+        rsvp = null;
+      }
+    } else if (email) {
+      rsvp = await prisma.rSVP.findUnique({
+        where: { eventId_email: { eventId: id, email } },
+      });
+    }
+
+    if (!rsvp) {
+      return res.status(404).json({ message: 'RSVP not found for this event' });
+    }
+
+    const updated = await prisma.rSVP.update({
+      where: { id: rsvp.id },
+      data: {
+        status: 'checked_in',
+        checkInAt: new Date(),
+        checkOutAt: null,
+        checkInMethod: method || 'manual',
+      },
+    });
+
+    res.json({ attendee: updated });
+  } catch (e) {
+    console.error('Check-in error:', e);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Check-out attendee for an event (organizer only)
+app.post('/api/events/:id/checkout', authenticate, authorize('user'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rsvpId, email } = req.body || {};
+
+    const event = await prisma.event.findUnique({ where: { id } });
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    let rsvp = null;
+    if (rsvpId) {
+      rsvp = await prisma.rSVP.findUnique({ where: { id: rsvpId } });
+      if (rsvp && rsvp.eventId !== id) {
+        rsvp = null;
+      }
+    } else if (email) {
+      rsvp = await prisma.rSVP.findUnique({
+        where: { eventId_email: { eventId: id, email } },
+      });
+    }
+
+    if (!rsvp) {
+      return res.status(404).json({ message: 'RSVP not found for this event' });
+    }
+
+    const updated = await prisma.rSVP.update({
+      where: { id: rsvp.id },
+      data: {
+        status: 'checked_out',
+        checkOutAt: new Date(),
+      },
+    });
+
+    res.json({ attendee: updated });
+  } catch (e) {
+    console.error('Check-out error:', e);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -353,10 +477,144 @@ app.get('/api/volunteers', async (req, res) => {
         totalVolunteers: vols.length,
         availableVolunteers: vols.filter(v=>String(v.status||'').toLowerCase()==='available').length,
         totalEvents: events.length,
-        upcomingEvents: upcomingCount
       }
     });
   }catch(e){ console.error(e); res.status(500).json({ message:'Server error' }); }
+});
+
+// ===== Ticket & Resource Booking APIs =====
+
+// Create a resource booking (from ticket-booking.html resource form)
+app.post('/api/bookings/resources', async (req, res) => {
+  try {
+    const {
+      resourceType,
+      quantity,
+      date,
+      startTime,
+      endTime,
+      duration,
+      purpose,
+      contactName,
+      contactEmail,
+      contactPhone,
+      specialReq,
+    } = req.body || {};
+
+    if (!resourceType || !date || !startTime || !endTime || !purpose || !contactName || !contactEmail) {
+      return res.status(400).json({ message: 'Missing required fields for resource booking' });
+    }
+
+    const created = await prisma.resourceBooking.create({
+      data: {
+        resourceType,
+        quantity: typeof quantity === 'number' ? quantity : quantity ? Number(quantity) || null : null,
+        date,
+        startTime,
+        endTime,
+        duration: duration || null,
+        purpose,
+        contactName,
+        contactEmail,
+        contactPhone: contactPhone || null,
+        specialReq: specialReq || null,
+      },
+    });
+
+    res.status(201).json({ booking: created });
+  } catch (e) {
+    console.error('Resource booking error:', e);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// List resource bookings (simple admin/debug endpoint)
+app.get('/api/bookings/resources', async (req, res) => {
+  try {
+    const list = await prisma.resourceBooking.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json({ bookings: list });
+  } catch (e) {
+    console.error('List resource bookings error:', e);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Create a ticket configuration (ticket details form)
+app.post('/api/bookings/tickets', async (req, res) => {
+  try {
+    const { ticketType, ticketPrice, ticketQty, ticketRelease, ticketNotes } = req.body || {};
+
+    if (!ticketType) {
+      return res.status(400).json({ message: 'Ticket type is required' });
+    }
+
+    const created = await prisma.ticketConfig.create({
+      data: {
+        ticketType,
+        price: typeof ticketPrice === 'number' ? ticketPrice : ticketPrice ? Number(ticketPrice) || null : null,
+        quantity: typeof ticketQty === 'number' ? ticketQty : ticketQty ? Number(ticketQty) || null : null,
+        releaseDate: ticketRelease || null,
+        notes: ticketNotes || null,
+      },
+    });
+
+    res.status(201).json({ ticket: created });
+  } catch (e) {
+    console.error('Ticket config error:', e);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// List ticket configurations
+app.get('/api/bookings/tickets', async (req, res) => {
+  try {
+    const list = await prisma.ticketConfig.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json({ tickets: list });
+  } catch (e) {
+    console.error('List ticket configs error:', e);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Gallery items APIs
+app.get('/api/gallery', async (req, res) => {
+  try {
+    const items = await prisma.galleryItem.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json({ items });
+  } catch (e) {
+    console.error('List gallery items error:', e);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.post('/api/gallery', async (req, res) => {
+  try {
+    const { event, image, description, author } = req.body || {};
+
+    if (!event || !image || !description) {
+      return res.status(400).json({ message: 'Event, image, and description are required' });
+    }
+
+    const created = await prisma.galleryItem.create({
+      data: {
+        event,
+        image,
+        description,
+        author: author || null,
+      },
+    });
+
+    res.status(201).json({ item: created });
+  } catch (e) {
+    console.error('Create gallery item error:', e);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
 // General volunteer registration (not tied to a specific event on the frontend)
@@ -499,17 +757,78 @@ app.delete('/api/users/me/rsvps/:rsvpId', authenticate, async (req, res) => {
 
 // Only listen when running locally (not on Vercel serverless)
 if (!process.env.VERCEL) {
-  app.listen(PORT, () => {
+  const server = http.createServer(app);
+
+  // Initialize Socket.IO for real-time chat
+  initSocket(server);
+
+  server.listen(PORT, () => {
     console.log(`API running on http://localhost:${PORT}`);
   });
 }
 
 export default app;
 
-// ===== Dashboard mock endpoints (additive) =====
-// Simple in-memory mocks to support dashboard2.html
+// ===== Dashboard metrics endpoints =====
+
+// Aggregate KPIs from real MongoDB data
+app.get('/api/dashboard/kpis', async (req, res) => {
+  try {
+    const now = new Date();
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const [events, registrations, ticketConfigs, totalMessages, messagesToday] = await Promise.all([
+      prisma.event.findMany(),
+      prisma.rSVP.count(),
+      prisma.ticketConfig.findMany(),
+      prisma.chatMessage.count(),
+      prisma.chatMessage.count({
+        where: {
+          createdAt: {
+            gte: startOfDay,
+          },
+        },
+      }),
+    ]);
+
+    let upcoming = 0;
+    const nowMs = now.getTime();
+    events.forEach((ev) => {
+      if (!ev.start) return;
+      const d = new Date(ev.start);
+      if (!Number.isNaN(d.getTime()) && d.getTime() >= nowMs) {
+        upcoming += 1;
+      }
+    });
+
+    let revenue = 0;
+    ticketConfigs.forEach((cfg) => {
+      const price = typeof cfg.price === 'number' ? cfg.price : 0;
+      const qty = typeof cfg.quantity === 'number' ? cfg.quantity : 0;
+      revenue += price * qty;
+    });
+
+    res.json({
+      totals: {
+        events: events.length,
+        registrations,
+        revenue: Math.round(revenue),
+        upcoming,
+      },
+      chat: {
+        totalMessages,
+        messagesToday,
+      },
+    });
+  } catch (e) {
+    console.error('Dashboard KPIs error:', e);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Keep simple mock endpoints for activities/alerts/performance charts for now
 const __dashMock = {
-  kpis: { totals: { events: 24, registrations: 1234, revenue: 425000, upcoming: 6 } },
   activities: [
     { type: 'Event', title: 'Cleanup Drive created', time: '2m ago' },
     { type: 'Reg', title: 'New registration: Maya', time: '6m ago' },
@@ -519,17 +838,13 @@ const __dashMock = {
     { level: 'warning', msg: 'Payment gateway latency increased' },
     { level: 'info', msg: '3 new registrations' }
   ],
-  performance: { series: [10,12,11,13,15,14,18] },
+  performance: { series: [10, 12, 11, 13, 15, 14, 18] },
   registrations: [
     { id: 1, eventId: 1, name: 'Maya' },
     { id: 2, eventId: 1, name: 'Rahul' }
-  ]
+  ],
 };
 
-// Health already exists at /api/health
-app.get('/api/dashboard/kpis', (req, res) => {
-  res.json(__dashMock.kpis);
-});
 app.get('/api/activities', (req, res) => {
   res.json({ items: __dashMock.activities });
 });

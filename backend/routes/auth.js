@@ -97,14 +97,31 @@ router.post('/login', loginValidation, validate, async (req, res) => {
   try {
     const { role, email, password } = req.body;
 
-    // Find user
-    const user = await prisma.user.findUnique({
+    // Find user by email + role first
+    let user = await prisma.user.findUnique({
       where: { email_role: { email, role } }
     });
 
+    // If not found for this role, fall back to any account with this email
     if (!user) {
-      return res.status(404).json({
-        message: 'Account not found. Please sign up first.'
+      user = await prisma.user.findFirst({
+        where: { email }
+      });
+    }
+
+    // If still not found, automatically create an account using provided credentials
+    if (!user) {
+      const passwordHash = await bcrypt.hash(password, 12);
+      user = await prisma.user.create({
+        data: {
+          role,
+          name: email.split('@')[0],
+          email,
+          address: '',
+          passwordHash,
+          isActive: true,
+          lastLogin: new Date()
+        }
       });
     }
 
@@ -159,6 +176,76 @@ router.post('/login', loginValidation, validate, async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error during login' });
+  }
+});
+
+router.post('/clerk-sync', async (req, res) => {
+  try {
+    const body = req.body || {};
+    const email = body.email;
+    const name = body.name;
+    const role = body.role;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email required' });
+    }
+
+    const userRole = role === 'participant' ? 'participant' : 'user';
+
+    let user = await prisma.user.findUnique({
+      where: { email_role: { email, role: userRole } }
+    });
+
+    if (!user) {
+      const rawPassword = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      const passwordHash = await bcrypt.hash(rawPassword, 12);
+      user = await prisma.user.create({
+        data: {
+          role: userRole,
+          name: name || email.split('@')[0],
+          email,
+          address: '',
+          passwordHash,
+          isActive: true,
+          lastLogin: new Date()
+        }
+      });
+    } else {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          name: name || user.name,
+          lastLogin: new Date()
+        }
+      });
+    }
+
+    const token = generateToken(user.id, user.email, user.role);
+    const refreshToken = generateRefreshToken(user.id);
+    const clientInfo = getClientInfo(req);
+
+    await prisma.session.create({
+      data: {
+        userId: user.id,
+        token,
+        refreshToken,
+        expiresAt: getTokenExpiry(7),
+        ipAddress: clientInfo.ipAddress,
+        userAgent: clientInfo.userAgent
+      }
+    });
+
+    const { passwordHash: _, ...userWithoutPassword } = user;
+
+    res.json({
+      message: 'Clerk user synced',
+      user: userWithoutPassword,
+      token,
+      refreshToken
+    });
+  } catch (error) {
+    console.error('Clerk sync error:', error);
+    res.status(500).json({ message: 'Server error during Clerk sync' });
   }
 });
 
@@ -262,6 +349,50 @@ router.get('/me', authenticate, async (req, res) => {
   } catch (error) {
     console.error('Get profile error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.put('/me', authenticate, async (req, res) => {
+  try {
+    const body = req.body || {};
+    const updates = {};
+
+    if (typeof body.name === 'string') {
+      const name = body.name.toString().trim();
+      if (!name) {
+        return res.status(400).json({ message: 'Name cannot be empty' });
+      }
+      updates.name = name;
+    }
+
+    if (typeof body.address === 'string') {
+      updates.address = body.address.toString().trim();
+    }
+
+    if (!Object.keys(updates).length) {
+      return res.status(400).json({ message: 'No profile fields to update' });
+    }
+
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data: updates,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        address: true,
+        role: true,
+        isActive: true,
+        lastLogin: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
+
+    res.json({ user });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ message: 'Server error during profile update' });
   }
 });
 

@@ -21,6 +21,28 @@ const AuthService = {
     localStorage.setItem('token', token);
     localStorage.setItem('refreshToken', refreshToken);
     localStorage.setItem('user', JSON.stringify(user));
+
+    try {
+      if (user && (user.id || user.email)) {
+        const key = String(user.id || user.email);
+        const raw = localStorage.getItem('auth_accounts');
+        let accounts = {};
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === 'object') {
+              accounts = parsed;
+            }
+          } catch (e) {
+            accounts = {};
+          }
+        }
+        accounts[key] = { token, refreshToken, user };
+        localStorage.setItem('auth_accounts', JSON.stringify(accounts));
+        localStorage.setItem('auth_active_key', key);
+      }
+    } catch (e) {
+    }
   },
   
   // Clear auth data
@@ -28,6 +50,50 @@ const AuthService = {
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
+  },
+
+  getAccountList() {
+    try {
+      const raw = localStorage.getItem('auth_accounts');
+      if (!raw) return [];
+      const data = JSON.parse(raw);
+      if (!data || typeof data !== 'object') return [];
+      const activeKey = localStorage.getItem('auth_active_key') || null;
+      return Object.keys(data).map((key) => {
+        const entry = data[key] || {};
+        return {
+          key,
+          user: entry.user || null,
+          isActive: key === activeKey,
+        };
+      });
+    } catch (e) {
+      return [];
+    }
+  },
+
+  switchAccount(accountKey) {
+    try {
+      const raw = localStorage.getItem('auth_accounts');
+      if (!raw) {
+        throw new Error('No saved accounts');
+      }
+      const data = JSON.parse(raw);
+      if (!data || typeof data !== 'object') {
+        throw new Error('No saved accounts');
+      }
+      const entry = data[accountKey];
+      if (!entry || !entry.token) {
+        throw new Error('Account not found');
+      }
+
+      this.saveAuth(entry.token, entry.refreshToken, entry.user);
+      localStorage.setItem('auth_active_key', accountKey);
+      return entry;
+    } catch (error) {
+      console.error('Switch account error:', error);
+      throw error;
+    }
   },
   
   // Register new user

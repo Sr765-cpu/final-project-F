@@ -10,7 +10,12 @@
   <link rel="stylesheet" href="styles.css">
   <style>
     /* Scoped to Communication page only */
-    #communication .card-grid { align-items: stretch; grid-auto-rows: auto; gap: 1rem; }
+    #communication .card-grid {
+      align-items: stretch;
+      grid-auto-rows: auto;
+      gap: 1rem;
+      grid-template-columns: 1fr;
+    }
     #communication .card-grid > article { background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0; position: relative; overflow: visible; display: block; }
     #communication .card-grid > article .card-body { background: transparent; border: 0; border-radius: 12px; padding: 0.75rem; }
     @media (max-width: 768px){ #communication .card-grid { grid-template-columns: 1fr; gap: 0.75rem; } }
@@ -66,75 +71,128 @@
         <article class="comm-card">
           <div class="card-body">
             <h3><span class="pill">#</span>Event/Group Channels</h3>
-            <p>Create or join channels tied to each event or group. Supports live chat and threaded discussions.</p>
-            <a class="btn btn-secondary" href="#" aria-disabled="true">Coming soon</a>
+            <p>Create or join channels tied to each event or group. Supports live chat for coordination.</p>
+            <div id="chat-widget" class="chat-shell" aria-label="Event chat" aria-live="polite">
+              <div class="chat-layout">
+                <aside class="chat-sidebar" aria-label="Chat navigation">
+                  <div class="chat-sidebar-header">
+                    <div class="chat-current-user">
+                      <div class="chat-avatar" id="chat-current-avatar">U</div>
+                      <div class="chat-current-meta">
+                        <div class="chat-current-name" id="chat-current-name">Guest</div>
+                        <div class="chat-current-email" id="chat-current-email"></div>
+                      </div>
+                    </div>
+                    <div class="chat-current-controls">
+                      <button type="button" class="chat-profile-edit-btn" id="chat-edit-profile-btn" aria-label="Edit profile">✎</button>
+                      <button type="button" class="chat-user-menu-toggle" id="chat-user-menu-toggle" aria-label="User options" aria-haspopup="menu" aria-expanded="false">▾</button>
+                      <div class="chat-user-menu" id="chat-user-menu" role="menu" aria-label="Switch account menu"></div>
+                    </div>
+                  </div>
+
+                  <div class="chat-sidebar-section">
+                    <div class="chat-sidebar-title">Rooms</div>
+                    <ul id="chat-rooms-list" class="chat-sidebar-list">
+                      <li class="chat-conversation-item chat-conversation-active" data-room-id="general" id="chat-room-general">
+                        <div class="chat-conversation-avatar chat-conversation-room">#</div>
+                        <div class="chat-conversation-text">
+                          <div class="chat-conversation-name">General</div>
+                          <div class="chat-conversation-subtitle">Group chat for everyone</div>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="chat-sidebar-section">
+                    <div class="chat-sidebar-title-row">
+                      <div class="chat-sidebar-title">Direct messages</div>
+                      <button type="button" class="chat-add-contact-btn" id="chat-add-contact-btn">+ Add contact</button>
+                    </div>
+                    <ul id="chat-dm-list" class="chat-sidebar-list">
+                      <!-- Populated by communication-chat.js -->
+                    </ul>
+                  </div>
+                </aside>
+
+                <section class="chat-main" aria-label="Conversation">
+                  <header class="chat-main-header">
+                    <div class="chat-main-header-left">
+                      <div class="chat-main-avatar" id="chat-header-avatar">#</div>
+                      <div class="chat-main-header-text">
+                        <div class="chat-main-title" id="chat-header-title">General</div>
+                        <div class="chat-main-subtitle" id="chat-header-subtitle">Group chat for everyone</div>
+                      </div>
+                    </div>
+                    <div class="chat-main-header-actions">
+                      <button type="button" class="chat-header-button" id="chat-clear-btn">Clear chat</button>
+                    </div>
+                  </header>
+
+                  <div id="chat-messages" class="chat-messages"></div>
+
+                  <form id="chat-form" class="chat-form" novalidate>
+                    <div class="chat-input-row">
+                      <button type="button" class="chat-input-icon" id="chat-emoji-btn" aria-label="Insert emoji">😊</button>
+                      <button type="button" class="chat-input-icon" id="chat-attach-btn" aria-label="Attach file">📎</button>
+                      <textarea id="chat-input" name="message" rows="1" placeholder="Type a message..."></textarea>
+                      <button class="chat-send-btn" type="submit" aria-label="Send message">
+                        <span class="chat-send-icon">➤</span>
+                      </button>
+                    </div>
+                  </form>
+
+                  <p id="chat-status" class="chat-status" aria-live="polite"></p>
+                </section>
+              </div>
+            </div>
+
+            <!-- Chat profile modal -->
+            <div class="chat-profile-modal" id="chat-profile-modal" aria-hidden="true" role="dialog" aria-modal="false">
+              <div class="chat-profile-backdrop" data-chat-profile-close></div>
+              <div class="chat-profile-dialog">
+                <button type="button" class="chat-profile-close" data-chat-profile-close aria-label="Close profile editor">×</button>
+                <h3 class="chat-profile-title">Edit Profile</h3>
+                <p class="chat-profile-subtitle">Update how you appear in chat.</p>
+                <form id="chat-profile-form" class="chat-profile-form" novalidate>
+                  <label class="chat-profile-field">
+                    <span class="label-text">Display name</span>
+                    <input type="text" id="chat-profile-name" name="name" autocomplete="name" placeholder="Your name" />
+                  </label>
+                  <label class="chat-profile-field">
+                    <span class="label-text">Address (optional)</span>
+                    <input type="text" id="chat-profile-address" name="address" autocomplete="street-address" placeholder="Where are you based?" />
+                  </label>
+                  <div class="chat-profile-actions">
+                    <button type="button" class="btn btn-ghost" data-chat-profile-close>Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="chat-profile-save-btn">Save changes</button>
+                  </div>
+                  <p id="chat-profile-status" class="chat-profile-status" aria-live="polite"></p>
+                </form>
+              </div>
+            </div>
+
+            <!-- Chat add contact modal -->
+            <div class="chat-contact-modal" id="chat-contact-modal" aria-hidden="true" role="dialog" aria-modal="false">
+              <div class="chat-contact-backdrop" data-chat-contact-close></div>
+              <div class="chat-contact-dialog">
+                <button type="button" class="chat-contact-close" data-chat-contact-close aria-label="Close add contact dialog">×</button>
+                <h3 class="chat-contact-title">Add contact</h3>
+                <p class="chat-contact-subtitle">Type an email or username of someone you want to message.</p>
+                <form id="chat-contact-form" class="chat-contact-form" novalidate>
+                  <label class="chat-contact-field">
+                    <span class="label-text">Email or username</span>
+                    <input type="text" id="chat-contact-query" name="query" autocomplete="off" placeholder="name@example.com or username" />
+                  </label>
+                  <div class="chat-contact-actions">
+                    <button type="button" class="btn btn-ghost" data-chat-contact-close>Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="chat-contact-save-btn">Save contact</button>
+                  </div>
+                  <p id="chat-contact-status" class="chat-contact-status" aria-live="polite"></p>
+                </form>
+              </div>
+            </div>
           </div>
         </article>
-        <article class="comm-card">
-          <div class="card-body">
-            <h3><span class="pill">💬</span>Message Board</h3>
-            <p>Post updates, questions, and resources for participants to view and respond to.</p>
-            <a class="btn btn-secondary" href="#" aria-disabled="true">Coming soon</a>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section class="about" aria-label="Notifications and Announcements">
-      <h2>Notifications & Announcements</h2>
-      <ul class="links">
-        <li>Send updates to volunteers and participants per event or group.</li>
-        <li>Allow opt-in/opt-out per channel.</li>
-        <li>Supports email/SMS/push integrations (to be integrated).</li>
-      </ul>
-    </section>
-
-    <section class="reviews" aria-label="Contact or Volunteer Coordination Form">
-      <h2>Contact / Coordination Request</h2>
-      <form class="feedback-form" id="coordination-form" novalidate>
-        <div class="field">
-          <label for="c-name">Your Name</label>
-          <input id="c-name" name="name" type="text" required>
-        </div>
-        <div class="field">
-          <label for="c-email">Email</label>
-          <input id="c-email" name="email" type="email" required>
-        </div>
-        <div class="field">
-          <label for="c-role">I am</label>
-          <select id="c-role" name="role" required>
-            <option value="organizer">Organizer</option>
-            <option value="volunteer">Volunteer</option>
-            <option value="participant">Participant</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="c-event">Event/Group (optional)</label>
-          <input id="c-event" name="event" type="text" placeholder="e.g., Community Cleanup #12">
-        </div>
-        <div class="field">
-          <label for="c-message">Message</label>
-          <textarea id="c-message" name="message" rows="4" required placeholder="Describe coordination needs, availability, or questions"></textarea>
-        </div>
-        <button class="btn btn-primary" type="submit">Send Request</button>
-      </form>
-    </section>
-
-    <!--   -->
-
-    <section class="stats" aria-label="Alerts and Reminders">
-      <h2>Alerts & Reminders</h2>
-      <div class="stat">
-        <span class="num">⏰</span>
-        <span class="label">Upcoming deadlines</span>
-      </div>
-      <div class="stat">
-        <span class="num">🔔</span>
-        <span class="label">Event changes</span>
-      </div>
-      <div class="stat">
-        <span class="num">✅</span>
-        <span class="label">Resource approvals</span>
       </div>
     </section>
   </main>
@@ -211,8 +269,8 @@
             }
           };
         } else {
-          // Signed out: simple Login link
-          loginLink.href = 'login.html';
+          // Signed out: simple Login link back to communication page after auth
+          loginLink.href = 'login.html?redirect=communication.html';
           if (loginText) loginText.textContent = 'Login';
           else loginLink.textContent = 'Login';
         }
@@ -249,7 +307,9 @@
       }
     })();
   </script>
-
+  <script src="auth.js"></script>
   <script src="app.js"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
+  <script src="communication-chat.js"></script>
 </body>
 </html>

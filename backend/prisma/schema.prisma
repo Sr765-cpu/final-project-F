@@ -24,6 +24,7 @@ model User {
   updatedAt    DateTime  @updatedAt
   sessions     Session[]
   rsvps        RSVP[]
+  messages     ChatMessage[]
 
   @@unique([email, role])
   @@index([email])
@@ -69,7 +70,12 @@ model RSVP {
   name      String
   email     String
   message   String
-  status    String   @default("confirmed") // confirmed, cancelled
+  ticketType  String   @default("General")
+  preferences String?
+  status        String   @default("confirmed") // confirmed, cancelled, checked_in, checked_out
+  checkInAt     DateTime?
+  checkOutAt    DateTime?
+  checkInMethod String?
   createdAt DateTime @default(now())
 
   @@index([eventId])
@@ -91,6 +97,32 @@ model Volunteer {
   createdAt     DateTime @default(now())
 
   @@index([eventId])
+}
+
+model ResourceBooking {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  resourceType  String
+  quantity      Int?
+  date          String
+  startTime     String
+  endTime       String
+  duration      String?
+  purpose       String
+  contactName   String
+  contactEmail  String
+  contactPhone  String?
+  specialReq    String?
+  createdAt     DateTime @default(now())
+}
+
+model TicketConfig {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  ticketType  String
+  price       Float?
+  quantity    Int?
+  releaseDate String?
+  notes       String?
+  createdAt   DateTime @default(now())
 }
 
 model Template {
@@ -130,4 +162,25 @@ model TemplateVersion {
   savedAt    DateTime @default(now())
 
   @@index([templateId])
+}
+
+model GalleryItem {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  event       String
+  image       String
+  description String
+  author      String?
+  createdAt   DateTime @default(now())
+}
+
+model ChatMessage {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  senderId  String   @db.ObjectId
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  room      String?
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([room])
+  @@index([senderId])
 }

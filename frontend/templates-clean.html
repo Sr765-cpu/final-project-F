@@ -495,8 +495,10 @@
   </div>
 
   <script>
+    const API_BASE = 'http://localhost:4000/api';
+
     // Template card component
-    function Card({ id, title, description, category, date, location, organizer, images = [] }) {
+    function Card({ id, title, description, category, datetime, location, organizer, images = [] }) {
       const categoryIcons = {
         tech: 'laptop-code',
         festival: 'music',
@@ -509,8 +511,8 @@
       // Normalize images: support array or single string
       const imgUrl = Array.isArray(images) ? (images[0] || '') : (images || '');
 
-      // Format date
-      const formattedDate = new Date(date).toLocaleDateString('en-US', {
+      // Format date (backend uses `datetime` ISO string)
+      const formattedDate = new Date(datetime || date).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
@@ -544,39 +546,9 @@
 
     // Initialize the app
     document.addEventListener('DOMContentLoaded', () => {
-      // Load templates from localStorage or use sample data
-      const templates = JSON.parse(localStorage.getItem('templates')) || [];
+      let templates = [];
       const templatesList = document.getElementById('templates-list');
-      
-      // Sample data for initial load if no templates exist
-      if (templates.length === 0) {
-        const sampleTemplates = [
-          {
-            id: '1',
-            title: 'Tech Workshop',
-            description: 'A hands-on workshop for learning modern web development technologies.',
-            category: 'workshop',
-            date: '2023-12-15',
-            location: 'Online',
-            organizer: 'Code Academy',
-            images: ['https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80']
-          },
-          {
-            id: '2',
-            title: 'Startup Meetup',
-            description: 'Networking event for startup founders and investors.',
-            category: 'meetup',
-            date: '2023-11-20',
-            location: 'Downtown Hub',
-            organizer: 'Startup Network',
-            images: ['https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80']
-          }
-        ];
-        
-        localStorage.setItem('templates', JSON.stringify(sampleTemplates));
-        templates.push(...sampleTemplates);
-      }
-      
+
       // Render templates
       function renderTemplates(templatesToRender = templates) {
         if (templatesToRender.length === 0) {
@@ -587,7 +559,7 @@
         templatesList.innerHTML = templatesToRender.map(template => 
           Card({
             ...template,
-            date: template.date || new Date().toISOString().split('T')[0]
+            date: template.datetime || new Date().toISOString().split('T')[0]
           })
         ).join('');
         
@@ -628,7 +600,11 @@
         document.getElementById('ct-title-input').value = template.title;
         document.getElementById('ct-desc').value = template.description;
         document.getElementById('ct-category').value = template.category;
-        document.getElementById('ct-date').value = template.date;
+        const dateInput = document.getElementById('ct-date');
+        if (dateInput) {
+          const iso = template.datetime || template.date || '';
+          dateInput.value = iso ? iso.slice(0, 10) : '';
+        }
         document.getElementById('ct-location').value = template.location;
         document.getElementById('ct-organizer').value = template.organizer;
         document.getElementById('ct-image').value = (template.images && template.images[0]) || '';
@@ -642,14 +618,16 @@
         document.getElementById('create-template-modal').classList.add('show');
       }
       
-      // Delete template
-      function deleteTemplate(templateId) {
-        const index = templates.findIndex(t => t.id === templateId);
-        if (index === -1) return;
-        
-        templates.splice(index, 1);
-        localStorage.setItem('templates', JSON.stringify(templates));
-        renderTemplates();
+      // Delete template (soft delete via API)
+      async function deleteTemplate(templateId) {
+        try {
+          const res = await fetch(`${API_BASE}/templates/${templateId}`, { method: 'DELETE' });
+          if (!res.ok) return;
+          templates = templates.filter(t => t.id !== templateId);
+          renderTemplates();
+        } catch (e) {
+          console.error('Failed to delete template', e);
+        }
       }
       
       // Generate descriptive summary for a template in a separate page
@@ -662,64 +640,22 @@
         window.location.href = 'template-summary.html';
       }
       
-      // Initial render
-      renderTemplates();
-      
-      // Modal handling
-      const modal = document.getElementById('create-template-modal');
-      const form = document.getElementById('create-template-card-form');
-      
-      // Open modal for new template
-      document.getElementById('create-template-btn').addEventListener('click', () => {
-        form.reset();
-        form.removeAttribute('data-edit-id');
-        document.getElementById('ct-title').textContent = 'Create New Template';
-        modal.classList.add('show');
-      });
-      
-      // Close modal when clicking outside or on close button
-      document.querySelectorAll('[data-close]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          modal.classList.remove('show');
-        });
-      });
-      
-      // Form submission
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const imageUrl = document.getElementById('ct-image').value.trim();
-
-        const templateData = {
-          id: form.dataset.editId || Date.now().toString(),
-          title: document.getElementById('ct-title-input').value,
-          description: document.getElementById('ct-desc').value,
-          category: document.getElementById('ct-category').value,
-          date: document.getElementById('ct-date').value,
-          location: document.getElementById('ct-location').value,
-          organizer: document.getElementById('ct-organizer').value,
-          images: imageUrl ? [imageUrl] : []
-        };
-        
-        if (form.dataset.editId) {
-          // Update existing template
-          const index = templates.findIndex(t => t.id === form.dataset.editId);
-          if (index !== -1) {
-            templates[index] = { ...templates[index], ...templateData };
-          }
-        } else {
-          // Add new template
-          templates.push(templateData);
+      async function loadTemplates() {
+        try {
+          const res = await fetch(`${API_BASE}/templates`);
+          const data = await res.json();
+          templates = Array.isArray(data.templates) ? data.templates : [];
+          try {
+            localStorage.setItem('templates', JSON.stringify(templates));
+          } catch (err) {}
+          renderTemplates();
+        } catch (e) {
+          console.error('Failed to load templates', e);
+          templatesList.innerHTML = '<div class="empty-state">Unable to load templates. Please try again later.</div>';
         }
-        
-        // Save to localStorage
-        localStorage.setItem('templates', JSON.stringify(templates));
-        
-        // Refresh the list and close modal
-        renderTemplates();
-        modal.classList.remove('show');
-      });
+      }
       
-      // Search functionality
+      // Search functionality (client-side over loaded templates)
       const searchInput = document.getElementById('tpl-search');
       searchInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
@@ -730,7 +666,7 @@
         renderTemplates(filteredTemplates);
       });
       
-      // Category filter
+      // Category filter (client-side over loaded templates)
       const categoryFilter = document.getElementById('tpl-category');
       categoryFilter.addEventListener('change', (e) => {
         const category = e.target.value;
@@ -745,7 +681,7 @@
         renderTemplates(filteredTemplates);
       });
       
-      // Sort functionality
+      // Sort functionality (client-side over loaded templates)
       const sortSelect = document.getElementById('tpl-sort');
       sortSelect.addEventListener('change', (e) => {
         const sortBy = e.target.value;
@@ -768,6 +704,9 @@
         
         renderTemplates(sortedTemplates);
       });
+
+      // Initial load
+      loadTemplates();
     });
   </script>
   <script src="app.js"></script>

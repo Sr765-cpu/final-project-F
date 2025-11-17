@@ -194,9 +194,20 @@
     type="text/javascript"
   ></script>
 
+  <script src="auth.js"></script>
+
   <script type="text/babel">
     console.log('Script loading...');
     const { useState, useEffect, useRef } = React;
+
+    let redirectTarget = null;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const r = params.get('redirect');
+      if (r) {
+        redirectTarget = r;
+      }
+    } catch (e) {}
 
     // KPI Card Component
     const KpiCard = ({ icon, label, value, subtitle, trend, gradient }) => (
@@ -241,7 +252,7 @@
           if (chartRef.current) {
             chartRef.current.destroy();
           }
-          
+
           const ctx = canvasRef.current.getContext('2d');
           chartRef.current = new window.Chart(ctx, {
             type,
@@ -296,12 +307,16 @@
 
     // Main Dashboard Component
     const Dashboard = () => {
-      const [stats] = useState({
-        totalEvents: 24,
-        activeEvents: 5,
-        totalAttendees: 1334,
-        totalRevenue: 420000
+      const [stats, setStats] = useState({
+        totalEvents: 0,
+        activeEvents: 0,
+        totalAttendees: 0,
+        totalRevenue: 0,
+        chatMessages: 0,
+        chatMessagesToday: 0,
       });
+
+      const [metricsError, setMetricsError] = useState(null);
 
       const [userName, setUserName] = useState(null);
 
@@ -312,6 +327,31 @@
         { type: '', title: 'Reached 100 attendees milestone', time: '1 hour ago' },
         { type: '', title: 'Reminder sent to 50 participants', time: '2 hours ago' }
       ];
+
+      const handleQuickAction = (action) => {
+        if (action === 'create') {
+          // Send organizers to Events page to create or manage events
+          window.location.href = 'events.html#events';
+          return;
+        }
+        if (action === 'invites') {
+          // For now, use ticket booking page as the entry point for invites / tickets
+          window.location.href = 'ticket-booking.html';
+          return;
+        }
+        if (action === 'attendees') {
+          // Redirect to dedicated attendee management dashboard
+          window.location.href = 'attendees.html';
+          return;
+        }
+        if (action === 'reports') {
+          // Scroll to the analytics / charts section on this dashboard
+          const el = document.getElementById('dashboard-reports');
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      };
 
       useEffect(() => {
         let cancelled = false;
@@ -337,19 +377,112 @@
               return;
             }
 
+            const email = user.primaryEmailAddress && user.primaryEmailAddress.emailAddress;
             const name =
               user.fullName ||
               user.firstName ||
-              (user.primaryEmailAddress && user.primaryEmailAddress.emailAddress) ||
+              email ||
               'User';
 
             setUserName(name);
+
+            if (typeof AuthService !== 'undefined' && email) {
+              try {
+                const res = await fetch(`${AuthService.API_URL}/auth/clerk-sync`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ email, name, role: 'user' }),
+                });
+
+                const data = await res.json();
+                if (res.ok && data && data.token && data.refreshToken && data.user) {
+                  AuthService.saveAuth(data.token, data.refreshToken, data.user);
+                  if (redirectTarget) {
+                    window.location.href = redirectTarget;
+                    return;
+                  }
+                } else {
+                  console.error('Clerk sync failed:', data);
+                }
+              } catch (err) {
+                console.error('Error syncing Clerk user to backend:', err);
+              }
+            }
           } catch (err) {
             console.error('Failed to load Clerk user on dashboard:', err);
           }
         };
 
         loadUser();
+
+        return () => {
+          cancelled = true;
+        };
+      }, []);
+
+      useEffect(() => {
+        let cancelled = false;
+
+        const loadMetrics = async () => {
+          try {
+            const apiBase = (typeof AuthService !== 'undefined' && AuthService.API_URL)
+              ? AuthService.API_URL
+              : 'http://localhost:4000/api';
+
+            const [kpiRes, eventsRes] = await Promise.all([
+              fetch(`${apiBase}/dashboard/kpis`),
+              fetch(`${apiBase}/events`),
+            ]);
+
+            const kpiData = await kpiRes.json().catch(() => ({}));
+            const eventsData = await eventsRes.json();
+
+            if (!eventsRes.ok) {
+              throw new Error((eventsData && eventsData.message) || 'Failed to load events');
+            }
+
+            if (cancelled) return;
+
+            const events = Array.isArray(eventsData.events) ? eventsData.events : [];
+            const now = new Date();
+
+            let totalEvents = events.length;
+            let activeEvents = 0;
+            let totalAttendees = 0;
+
+            events.forEach((ev) => {
+              const start = ev.start ? new Date(ev.start) : null;
+              const end = ev.end ? new Date(ev.end) : null;
+              const isActive = !!ev.ongoing || (start && end && now >= start && now <= end);
+              if (isActive) activeEvents += 1;
+
+              const rsvps = Array.isArray(ev.rsvps) ? ev.rsvps : [];
+              totalAttendees += rsvps.length;
+            });
+
+            const totals = (kpiData && kpiData.totals) || {};
+            const chat = (kpiData && kpiData.chat) || {};
+
+            setStats({
+              totalEvents: typeof totals.events === 'number' ? totals.events : totalEvents,
+              activeEvents,
+              totalAttendees,
+              totalRevenue: typeof totals.revenue === 'number' ? totals.revenue : 0,
+              chatMessages: typeof chat.totalMessages === 'number' ? chat.totalMessages : 0,
+              chatMessagesToday: typeof chat.messagesToday === 'number' ? chat.messagesToday : 0,
+            });
+            setMetricsError(null);
+          } catch (err) {
+            console.error('Dashboard metrics load error:', err);
+            if (!cancelled) {
+              setMetricsError(err.message || 'Unable to load live stats');
+            }
+          }
+        };
+
+        loadMetrics();
 
         return () => {
           cancelled = true;
@@ -430,6 +563,11 @@
                   )
                   : "Welcome back! Here's what's happening with your events today."}
               </p>
+              {metricsError && (
+                <p style={{ color: '#fecaca', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+                  {metricsError}
+                </p>
+              )}
             </div>
 
             {/* KPI Cards */}
@@ -462,14 +600,21 @@
                 icon="💰"
                 label="Total Revenue"
                 value={`₹${(stats.totalRevenue / 1000).toFixed(0)}K`}
-                subtitle="This month"
+                subtitle={
+                  stats.chatMessagesToday
+                    ? `This month • ${stats.chatMessagesToday} chat msgs today`
+                    : 'This month'
+                }
                 trend="+23%"
                 gradient="linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"
               />
             </div>
 
             {/* Charts Row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+            <div
+              id="dashboard-reports"
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}
+            >
               <ChartCard title="Event Categories">
                 <div className="chart-container">
                   <ChartComponent
@@ -528,10 +673,10 @@
                   Quick Actions
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <QuickAction icon="📅" label="Create Event" onClick={() => alert('Create Event')} />
-                  <QuickAction icon="✉️" label="Send Invites" onClick={() => alert('Send Invites')} />
-                  <QuickAction icon="👥" label="Manage Attendees" onClick={() => alert('Manage Attendees')} />
-                  <QuickAction icon="📊" label="View Reports" onClick={() => alert('View Reports')} />
+                  <QuickAction icon="📅" label="Create Event" onClick={() => handleQuickAction('create')} />
+                  <QuickAction icon="✉️" label="Send Invites" onClick={() => handleQuickAction('invites')} />
+                  <QuickAction icon="👥" label="Manage Attendees" onClick={() => handleQuickAction('attendees')} />
+                  <QuickAction icon="📊" label="View Reports" onClick={() => handleQuickAction('reports')} />
                 </div>
               </div>
             </div>

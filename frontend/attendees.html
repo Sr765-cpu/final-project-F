@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EventNest – Attendee Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="aurora-body">
+  <header class="navbar" role="navigation" aria-label="Primary">
+    <div class="nav-inner">
+      <a class="brand" href="index.html"> <span class="group">&lt;CodeInc&gt;</span></a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <nav id="nav-links" class="nav-links">
+        <a href="index.html#home">Home</a>
+        <a href="events.html">Events</a>
+        <a href="volunteers.html">Volunteers</a>
+        <a href="dashboard2.html">Dashboard</a>
+        <a href="attendees.html">Attendees</a>
+        <a href="communication.html">Communication</a>
+        <a href="login.html" id="login-link">
+          <span id="login-text">Login</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="events-page" style="max-width:1200px;margin:1rem auto 2.5rem;padding:0 1rem;">
+    <section class="about" aria-label="Attendee Management Intro">
+      <h1>Attendee Management</h1>
+      <p>Monitor registrations, manage check-ins, and analyze engagement across your events in real time.</p>
+    </section>
+
+    <section class="events-toolbar" aria-label="Attendee Controls">
+      <div class="filters" role="group" aria-label="Event and attendee filters">
+        <select id="attendee-event-select" aria-label="Select event">
+          <option value="">Select an event</option>
+        </select>
+        <input type="text" id="attendee-search" placeholder="Search by name or email" aria-label="Search attendees">
+        <select id="attendee-status-filter" aria-label="Status filter">
+          <option value="">All Statuses</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="checked_in">Checked-in</option>
+          <option value="checked_out">Checked-out</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <select id="attendee-ticket-filter" aria-label="Ticket type filter">
+          <option value="">All Ticket Types</option>
+          <option value="General">General</option>
+          <option value="VIP">VIP</option>
+          <option value="Student">Student</option>
+          <option value="Sponsor">Sponsor</option>
+        </select>
+        <button class="btn btn-ghost" id="attendee-clear-filters" type="button">Clear</button>
+      </div>
+    </section>
+
+    <section class="events-sections" aria-label="Attendee overview" style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;align-items:flex-start;">
+      <div>
+        <div class="stats" aria-label="Live attendee stats" style="margin-bottom:1rem;">
+          <div class="stat">
+            <span class="num" id="stat-total-registered">0</span>
+            <span class="label">Total Registered</span>
+          </div>
+          <div class="stat">
+            <span class="num" id="stat-checked-in">0</span>
+            <span class="label">Checked-in</span>
+          </div>
+          <div class="stat">
+            <span class="num" id="stat-on-site">0</span>
+            <span class="label">Currently On Site</span>
+          </div>
+          <div class="stat">
+            <span class="num" id="stat-no-show">0</span>
+            <span class="label">No-show (est.)</span>
+          </div>
+        </div>
+
+        <div class="glass-card" aria-label="Attendee list">
+          <h2 class="gradient-text" style="font-size:1.25rem;margin-bottom:0.25rem;">Attendee List</h2>
+          <p id="attendee-event-label" class="muted" style="font-size:0.85rem;margin-bottom:0.75rem;">Select an event to view attendees.</p>
+          <div class="table-wrapper" style="overflow-x:auto;">
+            <table class="data-table" style="width:100%;border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Ticket</th>
+                  <th>Status</th>
+                  <th>Check-in</th>
+                  <th>Check-out</th>
+                  <th>Preferences / Sessions</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="attendee-table-body">
+                <tr>
+                  <td colspan="8" style="text-align:center;padding:1rem 0;color:var(--muted);">Select an event to view attendees.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p id="attendee-error" style="color:#fecaca;font-size:0.85rem;margin-top:0.5rem;display:none;"></p>
+        </div>
+      </div>
+
+      <aside aria-label="Tools and analytics" style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="glass-card">
+          <h2 class="gradient-text" style="font-size:1.1rem;margin-bottom:0.4rem;">Check-in Insights</h2>
+          <p id="checkin-summary" class="muted" style="font-size:0.85rem;margin-bottom:0.75rem;">
+            Select an event to see how attendees are checking in.
+          </p>
+          <ul id="checkin-method-list" class="muted" style="font-size:0.85rem;list-style:disc;padding-left:1.2rem;">
+            <li>No check-ins yet.</li>
+          </ul>
+        </div>
+
+        <div class="glass-card">
+          <h2 class="gradient-text" style="font-size:1.1rem;margin-bottom:0.4rem;">Audience Segments</h2>
+          <p class="muted" style="font-size:0.85rem;margin-bottom:0.5rem;">
+            Live breakdown from current attendees.
+          </p>
+          <h3 style="font-size:0.9rem;margin:0 0 0.25rem;">Ticket types</h3>
+          <ul id="ticket-insights" class="muted" style="font-size:0.85rem;list-style:disc;padding-left:1.2rem;margin-bottom:0.6rem;">
+            <li>No attendees yet.</li>
+          </ul>
+          <h3 style="font-size:0.9rem;margin:0 0 0.25rem;">Top sessions</h3>
+          <ul id="session-insights" class="muted" style="font-size:0.85rem;list-style:disc;padding-left:1.2rem;">
+            <li>No session preferences captured yet.</li>
+          </ul>
+        </div>
+
+        <div class="glass-card">
+          <h2 class="gradient-text" style="font-size:1.1rem;margin-bottom:0.5rem;">Tools</h2>
+          <button class="btn btn-secondary" type="button" id="attendee-export-csv-btn">Export attendees CSV</button>
+          <p class="muted" style="font-size:0.8rem;margin-top:0.45rem;margin-bottom:0.85rem;">
+            Download the current event's attendees with statuses and check-in timestamps.
+          </p>
+          <button class="btn btn-ghost" type="button" id="attendee-feedback-btn">Copy feedback link</button>
+          <p id="attendee-feedback-hint" class="muted" style="font-size:0.8rem;margin-top:0.5rem;display:none;">Feedback link copied. Paste it into your emails or bulk messages.</p>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="footer" aria-label="Footer">
+    <div class="footer-grid">
+      <div>
+        <h3>EVENT NEST - NESTING IDEAS,CRAFTING EXPERIENCE <span class="group">&lt;CodeInc&gt;</span></h3>
+        <p>contact@connecthub.example</p>
+        <div class="socials">
+          <a href="#" aria-label="Twitter">Twitter</a>
+          <a href="#" aria-label="Instagram">Instagram</a>
+          <a href="#" aria-label="LinkedIn">LinkedIn</a>
+        </div>
+      </div>
+      <div>
+        <h4>Newsletter</h4>
+        <form class="newsletter" novalidate>
+          <input type="email" placeholder="Your email" aria-label="Email">
+          <button class="btn btn-primary" type="submit">Subscribe</button>
+        </form>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <ul class="links">
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="copyright">  <span id="year"></span> EVENT NEST - NESTING IDEAS,CRAFTING EXPERIENCE • &lt;CodeInc&gt;</p>
+  </footer>
+
+  <script src="auth.js"></script>
+  <script src="app.js"></script>
+  <script>
+    (function() {
+      const API_BASE = (typeof AuthService !== 'undefined' && AuthService.API_URL) ? AuthService.API_URL : 'http://localhost:4000/api';
+      const OFFLINE_KEY = 'attendee_offline_ops';
+
+      const eventSelect = document.getElementById('attendee-event-select');
+      const searchInput = document.getElementById('attendee-search');
+      const statusFilter = document.getElementById('attendee-status-filter');
+      const ticketFilter = document.getElementById('attendee-ticket-filter');
+      const clearFiltersBtn = document.getElementById('attendee-clear-filters');
+      const tbody = document.getElementById('attendee-table-body');
+      const errorEl = document.getElementById('attendee-error');
+
+      const totalRegisteredEl = document.getElementById('stat-total-registered');
+      const checkedInEl = document.getElementById('stat-checked-in');
+      const onSiteEl = document.getElementById('stat-on-site');
+      const noShowEl = document.getElementById('stat-no-show');
+
+      const feedbackBtn = document.getElementById('attendee-feedback-btn');
+      const feedbackHint = document.getElementById('attendee-feedback-hint');
+      const attendeeEventLabel = document.getElementById('attendee-event-label');
+      const checkinSummaryEl = document.getElementById('checkin-summary');
+      const checkinMethodListEl = document.getElementById('checkin-method-list');
+      const ticketInsightsEl = document.getElementById('ticket-insights');
+      const sessionInsightsEl = document.getElementById('session-insights');
+      const exportCsvBtn = document.getElementById('attendee-export-csv-btn');
+
+      let currentEventId = null;
+      let currentEventMeta = null;
+      let allAttendees = [];
+
+      function safeJsonParse(raw, fallback) {
+        try { return JSON.parse(raw); } catch { return fallback; }
+      }
+
+      function getOfflineOps() {
+        const raw = localStorage.getItem(OFFLINE_KEY);
+        if (!raw) return [];
+        return safeJsonParse(raw, []);
+      }
+
+      function saveOfflineOps(ops) {
+        if (!ops || !ops.length) {
+          localStorage.removeItem(OFFLINE_KEY);
+          return;
+        }
+        localStorage.setItem(OFFLINE_KEY, JSON.stringify(ops));
+      }
+
+      function queueOfflineOp(op) {
+        const ops = getOfflineOps();
+        ops.push({ ...op, ts: Date.now() });
+        saveOfflineOps(ops);
+      }
+
+      async function flushOfflineOps() {
+        const ops = getOfflineOps();
+        if (!ops.length) return;
+
+        const remaining = [];
+        for (const op of ops) {
+          try {
+            const url = `${API_BASE}/events/${op.eventId}/${op.action === 'checkout' ? 'checkout' : 'checkin'}`;
+            const res = await AuthService.authenticatedFetch(url, {
+              method: 'POST',
+              body: JSON.stringify({ rsvpId: op.rsvpId, method: op.method || 'offline' })
+            });
+            if (!res.ok) {
+              remaining.push(op);
+            }
+          } catch (e) {
+            remaining.push(op);
+          }
+        }
+
+        saveOfflineOps(remaining);
+      }
+
+      async function ensureAuthenticated() {
+        try {
+          await AuthService.getProfile();
+        } catch (e) {
+          console.error('Attendees page auth error:', e);
+          window.location.href = 'login.html';
+        }
+      }
+
+      function computeStats(list) {
+        const total = list.length;
+        const checkedIn = list.filter(a => (a.status || '').toLowerCase() === 'checked_in').length;
+        const checkedOut = list.filter(a => (a.status || '').toLowerCase() === 'checked_out').length;
+        const onSite = Math.max(checkedIn - checkedOut, 0);
+        const noShow = Math.max(total - checkedIn, 0);
+
+        totalRegisteredEl.textContent = String(total);
+        checkedInEl.textContent = String(checkedIn);
+        onSiteEl.textContent = String(onSite);
+        noShowEl.textContent = String(noShow);
+      }
+
+      function updateInsights() {
+        if (!checkinSummaryEl || !checkinMethodListEl || !ticketInsightsEl || !sessionInsightsEl) {
+          return;
+        }
+
+        const total = allAttendees.length;
+        const checkedInList = allAttendees.filter(a => (a.status || '').toLowerCase() === 'checked_in');
+        const checkedInCount = checkedInList.length;
+        const showRate = total ? Math.round((checkedInCount * 100) / total) : 0;
+
+        if (!total) {
+          checkinSummaryEl.textContent = 'No attendees for this event yet.';
+          checkinMethodListEl.innerHTML = '<li>No check-ins yet.</li>';
+          ticketInsightsEl.innerHTML = '<li>No attendees yet.</li>';
+          sessionInsightsEl.innerHTML = '<li>No session preferences captured yet.</li>';
+          return;
+        }
+
+        checkinSummaryEl.textContent = `${checkedInCount} of ${total} attendees have checked in (${showRate}% show rate).`;
+
+        const methodCounts = {};
+        checkedInList.forEach(a => {
+          const raw = (a.checkInMethod || 'manual').toString().toLowerCase();
+          let label = 'Manual';
+          if (raw === 'qr' || raw === 'qrcode') label = 'QR code';
+          else if (raw === 'rfid') label = 'RFID';
+          else if (raw === 'kiosk') label = 'Kiosk';
+          methodCounts[label] = (methodCounts[label] || 0) + 1;
+        });
+
+        checkinMethodListEl.innerHTML = '';
+        const methodEntries = Object.entries(methodCounts);
+        if (!methodEntries.length) {
+          checkinMethodListEl.innerHTML = '<li>No check-ins yet.</li>';
+        } else {
+          const totalCheckins = methodEntries.reduce((sum, [, count]) => sum + count, 0);
+          methodEntries.sort((a, b) => b[1] - a[1]).forEach(([label, count]) => {
+            const percent = totalCheckins ? Math.round((count * 100) / totalCheckins) : 0;
+            const li = document.createElement('li');
+            li.textContent = `${label} – ${count} (${percent}%)`;
+            checkinMethodListEl.appendChild(li);
+          });
+        }
+
+        const ticketCounts = {};
+        allAttendees.forEach(a => {
+          const t = (a.ticketType || 'General').toString().trim();
+          if (!t) return;
+          ticketCounts[t] = (ticketCounts[t] || 0) + 1;
+        });
+
+        ticketInsightsEl.innerHTML = '';
+        const ticketEntries = Object.entries(ticketCounts);
+        if (!ticketEntries.length) {
+          ticketInsightsEl.innerHTML = '<li>No attendees yet.</li>';
+        } else {
+          ticketEntries.sort((a, b) => b[1] - a[1]).forEach(([label, count]) => {
+            const li = document.createElement('li');
+            li.textContent = `${label} – ${count}`;
+            ticketInsightsEl.appendChild(li);
+          });
+        }
+
+        const sessionCounts = {};
+        allAttendees.forEach(a => {
+          if (!a.preferences) return;
+          const parsed = safeJsonParse(a.preferences, null);
+          if (!parsed || !parsed.sessions) return;
+          const sessions = Array.isArray(parsed.sessions) ? parsed.sessions : [parsed.sessions];
+          sessions.forEach(s => {
+            const name = String(s || '').trim();
+            if (!name) return;
+            sessionCounts[name] = (sessionCounts[name] || 0) + 1;
+          });
+        });
+
+        sessionInsightsEl.innerHTML = '';
+        const sessionEntries = Object.entries(sessionCounts);
+        if (!sessionEntries.length) {
+          sessionInsightsEl.innerHTML = '<li>No session preferences captured yet.</li>';
+        } else {
+          sessionEntries
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .forEach(([name, count]) => {
+              const li = document.createElement('li');
+              li.textContent = `${name} – ${count}`;
+              sessionInsightsEl.appendChild(li);
+            });
+        }
+      }
+
+      function formatDateTime(value) {
+        if (!value) return '—';
+        try {
+          const d = new Date(value);
+          if (!isNaN(d.getTime())) return d.toLocaleString();
+        } catch {}
+        return String(value);
+      }
+
+      function renderTable() {
+        if (!tbody) return;
+
+        const query = (searchInput.value || '').trim().toLowerCase();
+        const status = (statusFilter.value || '').toLowerCase();
+        const ticket = (ticketFilter.value || '').toLowerCase();
+
+        const filtered = allAttendees.filter((a) => {
+          const name = (a.name || '').toLowerCase();
+          const email = (a.email || '').toLowerCase();
+          const statusVal = (a.status || '').toLowerCase();
+          const ticketVal = (a.ticketType || '').toLowerCase();
+
+          if (query && !(name.includes(query) || email.includes(query))) return false;
+          if (status && statusVal !== status) return false;
+          if (ticket && ticketVal !== ticket) return false;
+          return true;
+        });
+
+        // Stats and insights always reflect the full event, not just the filtered subset
+        computeStats(allAttendees);
+        updateInsights();
+
+        if (!filtered.length) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:1rem 0;color:var(--muted);">No attendees match the current filters.</td></tr>';
+          return;
+        }
+
+        const rows = filtered.map((a) => {
+          const statusLabel = (a.status || 'confirmed').replace('_', ' ');
+          const canCheckIn = (a.status || '').toLowerCase() !== 'checked_in';
+          const canCheckOut = (a.status || '').toLowerCase() === 'checked_in';
+          const prefs = a.preferences || '';
+
+          return `
+            <tr data-rsvp-id="${a.id}">
+              <td>${a.name || '—'}</td>
+              <td>${a.email || '—'}</td>
+              <td>${a.ticketType || 'General'}</td>
+              <td>${statusLabel}</td>
+              <td>${formatDateTime(a.checkInAt)}</td>
+              <td>${formatDateTime(a.checkOutAt)}</td>
+              <td>${prefs || '—'}</td>
+              <td>
+                <button class="btn btn-secondary btn-xs attendee-checkin" data-action="checkin" ${canCheckIn ? '' : 'disabled'}>Check-in</button>
+                <button class="btn btn-ghost btn-xs attendee-checkout" data-action="checkout" ${canCheckOut ? '' : 'disabled'}>Check-out</button>
+              </td>
+            </tr>
+          `;
+        });
+
+        tbody.innerHTML = rows.join('');
+      }
+
+      async function loadEvents() {
+        try {
+          const res = await AuthService.authenticatedFetch(`${API_BASE}/events`);
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data && data.message ? data.message : 'Failed to load events');
+          }
+
+          const events = Array.isArray(data.events) ? data.events : [];
+          eventSelect.innerHTML = '<option value="">Select an event</option>';
+          events.forEach(ev => {
+            const opt = document.createElement('option');
+            opt.value = ev.id;
+            opt.textContent = `${ev.title} – ${ev.city}`;
+            eventSelect.appendChild(opt);
+          });
+
+          if (events.length) {
+            currentEventId = events[0].id;
+            eventSelect.value = currentEventId;
+            await loadAttendees(currentEventId);
+          }
+        } catch (e) {
+          console.error('Failed to load events for attendees page:', e);
+          if (errorEl) {
+            errorEl.textContent = e.message || 'Unable to load events.';
+            errorEl.style.display = '';
+          }
+        }
+      }
+
+      async function loadAttendees(eventId) {
+        if (!eventId) {
+          allAttendees = [];
+          currentEventMeta = null;
+          if (attendeeEventLabel) {
+            attendeeEventLabel.textContent = 'Select an event to view attendees.';
+          }
+          renderTable();
+          return;
+        }
+
+        try {
+          errorEl.style.display = 'none';
+          errorEl.textContent = '';
+
+          const res = await AuthService.authenticatedFetch(`${API_BASE}/events/${eventId}/attendees`);
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data && data.message ? data.message : 'Failed to load attendees');
+          }
+
+          const list = Array.isArray(data.attendees) ? data.attendees : [];
+          allAttendees = list;
+          currentEventMeta = data.event || null;
+          if (attendeeEventLabel) {
+            if (currentEventMeta) {
+              const city = currentEventMeta.city ? ` – ${currentEventMeta.city}` : '';
+              attendeeEventLabel.textContent = `Showing attendees for: ${currentEventMeta.title || 'Event'}${city}`;
+            } else {
+              attendeeEventLabel.textContent = 'Select an event to view attendees.';
+            }
+          }
+          renderTable();
+        } catch (e) {
+          console.error('Failed to load attendees:', e);
+          allAttendees = [];
+          renderTable();
+          if (errorEl) {
+            errorEl.textContent = e.message || 'Unable to load attendees.';
+            errorEl.style.display = '';
+          }
+        }
+      }
+
+      async function performCheckAction(rsvpId, action) {
+        if (!currentEventId || !rsvpId) return;
+        try {
+          const url = `${API_BASE}/events/${currentEventId}/${action === 'checkout' ? 'checkout' : 'checkin'}`;
+          const body = { rsvpId, method: action === 'checkout' ? undefined : 'manual' };
+          const res = await AuthService.authenticatedFetch(url, {
+            method: 'POST',
+            body: JSON.stringify(body),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data && data.message ? data.message : 'Failed to update attendee');
+          }
+
+          const updated = data.attendee || data.rsvp;
+          if (updated) {
+            allAttendees = allAttendees.map(a => a.id === updated.id ? updated : a);
+            renderTable();
+          } else {
+            await loadAttendees(currentEventId);
+          }
+        } catch (e) {
+          console.error('Check-in/out error, queuing offline op if network issue:', e);
+          // If we suspect a network issue, queue the op for retry
+          queueOfflineOp({ eventId: currentEventId, rsvpId, action, method: 'manual' });
+          if (errorEl) {
+            errorEl.textContent = 'Network issue while updating attendee. Change will sync when connection is restored.';
+            errorEl.style.display = '';
+          }
+        }
+      }
+
+      function attachTableHandlers() {
+        if (!tbody) return;
+        tbody.addEventListener('click', (e) => {
+          const target = e.target;
+          if (!(target instanceof HTMLElement)) return;
+          const action = target.dataset.action;
+          if (!action) return;
+
+          const row = target.closest('tr');
+          if (!row) return;
+          const rsvpId = row.getAttribute('data-rsvp-id');
+          if (!rsvpId) return;
+
+          performCheckAction(rsvpId, action);
+        });
+      }
+
+      function attachFilterHandlers() {
+        if (searchInput) searchInput.addEventListener('input', renderTable);
+        if (statusFilter) statusFilter.addEventListener('change', renderTable);
+        if (ticketFilter) ticketFilter.addEventListener('change', renderTable);
+        if (clearFiltersBtn) {
+          clearFiltersBtn.addEventListener('click', () => {
+            if (searchInput) searchInput.value = '';
+            if (statusFilter) statusFilter.value = '';
+            if (ticketFilter) ticketFilter.value = '';
+            renderTable();
+          });
+        }
+      }
+
+      function attachEventSelectHandler() {
+        if (!eventSelect) return;
+        eventSelect.addEventListener('change', async (e) => {
+          const value = e.target.value;
+          currentEventId = value || null;
+          await loadAttendees(currentEventId);
+        });
+      }
+
+      function attachFeedbackHandler() {
+        if (!feedbackBtn) return;
+        feedbackBtn.addEventListener('click', async () => {
+          try {
+            const url = new URL('index.html#feedback', window.location.href).toString();
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(url);
+            }
+            if (feedbackHint) {
+              feedbackHint.style.display = '';
+            }
+          } catch (e) {
+            console.error('Unable to copy feedback link:', e);
+          }
+        });
+      }
+
+      function exportAttendeesCsv() {
+        if (!allAttendees.length) {
+          alert('No attendees to export for this event yet.');
+          return;
+        }
+
+        const header = ['Name','Email','Ticket Type','Status','Check-in At','Check-out At','Check-in Method','Preferences'];
+        const rows = allAttendees.map(a => [
+          a.name || '',
+          a.email || '',
+          a.ticketType || '',
+          a.status || '',
+          a.checkInAt || '',
+          a.checkOutAt || '',
+          a.checkInMethod || '',
+          a.preferences || ''
+        ]);
+
+        const csvLines = [header, ...rows].map(row =>
+          row.map(value => {
+            const str = String(value ?? '');
+            const escaped = str.replace(/"/g, '""');
+            return `"${escaped}"`;
+          }).join(',')
+        );
+
+        const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const safeTitle = currentEventMeta && currentEventMeta.title
+          ? currentEventMeta.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase()
+          : 'event';
+        link.href = url;
+        link.download = `attendees-${safeTitle}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+
+      function attachToolsHandlers() {
+        if (exportCsvBtn) {
+          exportCsvBtn.addEventListener('click', exportAttendeesCsv);
+        }
+      }
+
+      async function init() {
+        try {
+          await ensureAuthenticated();
+          await flushOfflineOps();
+          attachTableHandlers();
+          attachFilterHandlers();
+          attachEventSelectHandler();
+          attachFeedbackHandler();
+          attachToolsHandlers();
+          await loadEvents();
+        } catch (e) {
+          console.error('Failed to initialize attendees page:', e);
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>

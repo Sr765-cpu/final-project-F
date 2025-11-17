@@ -124,7 +124,9 @@ if(navToggle&&navLinks){
     const endTxt = new Date(ev.end).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
     const liveBadge = ev.ongoing && panelName==='ongoing' ? '<span class="live">Live Now</span>' : '';
     const joinOrRegister = panelName==='ongoing' ? 'Join' : (panelName==='past' ? 'Gallery' : 'Register');
-    const joinHref = panelName==='past' ? '#' : 'register.html';
+    const joinHref = panelName==='past'
+      ? '#'
+      : `participant-registration.html?eventId=${encodeURIComponent(ev.id||'')}`;
     const banner = ev.banner || 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop';
     const html = `
       <article class="event-card ${panelName==='past'?'past':''} ${ev.ongoing?'live':''} reveal" data-id="${ev.id||''}" data-category="${ev.category}" data-date="${dateAttr}" data-location="${ev.city}">

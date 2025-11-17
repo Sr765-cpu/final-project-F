@@ -134,6 +134,8 @@
     type="text/javascript"
   ></script>
 
+  <script src="auth.js"></script>
+
   <script>
     (function() {
       const MAX_TRIES = 20;
@@ -221,7 +223,7 @@
         });
       }
 
-      form.addEventListener('submit', function(e){
+      form.addEventListener('submit', async function(e){
         e.preventDefault();
 
         const first = document.getElementById('first-name');
@@ -259,8 +261,26 @@
           return;
         }
 
-        // After successful "registration", go to dashboard page
-        window.location.href = 'dashboard2.html';
+        if (typeof AuthService === 'undefined') {
+          alert('Authentication service not available. Please refresh the page.');
+          return;
+        }
+
+        const payload = {
+          role: 'participant',
+          name: (first.value.trim() + ' ' + last.value.trim()).trim(),
+          email: emailVal,
+          address: contact.value.trim(),
+          password: passwordVal
+        };
+
+        try {
+          await AuthService.register(payload);
+          window.location.href = 'dashboard2.html';
+        } catch (err) {
+          console.error('Registration failed:', err);
+          alert(err.message || 'Registration failed. Please try again.');
+        }
       });
     })();
   </script>

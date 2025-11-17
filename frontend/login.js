@@ -5,6 +5,8 @@
   // State
   let currentAuthMode = 'login';
   let currentRole = 'organizer';
+  let redirectTarget = 'dashboard2.html';
+  let hasRedirectParam = false;
 
   // Add entrance animation to container
   const container = document.querySelector('.login-container');
@@ -34,12 +36,17 @@
   const signupOnly = document.getElementById('signup-only');
   const submitBtn = document.getElementById('submit-btn');
 
-  // Read role from URL for dedicated detailed login page (e.g., login-details.html?role=organizer)
+  // Read role and redirect from URL for dedicated detailed login page (e.g., login-details.html?role=organizer&redirect=communication.html)
   try {
     const params = new URLSearchParams(window.location.search);
     const roleFromUrl = params.get('role');
+    const redirectFromUrl = params.get('redirect');
     if (roleFromUrl === 'organizer' || roleFromUrl === 'participant') {
       currentRole = roleFromUrl;
+    }
+    if (redirectFromUrl) {
+      redirectTarget = redirectFromUrl;
+      hasRedirectParam = true;
     }
   } catch (e) {
     // ignore malformed URL
@@ -75,11 +82,15 @@
     });
   });
 
-  // Role selection on compact card → navigate to detailed login page
+  // Role selection on compact card → navigate to detailed login page, preserving redirect if present
   roleButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const roleParam = btn.dataset.role === 'participant' ? 'participant' : 'organizer';
-      window.location.href = `login-details.html?role=${encodeURIComponent(roleParam)}`;
+      let nextUrl = `login-details.html?role=${encodeURIComponent(roleParam)}`;
+      if (hasRedirectParam && redirectTarget) {
+        nextUrl += `&redirect=${encodeURIComponent(redirectTarget)}`;
+      }
+      window.location.href = nextUrl;
     });
   });
 
@@ -300,7 +311,7 @@
       
       // Redirect after short delay
       setTimeout(() => {
-        window.location.href = 'dashboard2.html';
+        window.location.href = redirectTarget || 'dashboard2.html';
       }, 1500);
       
     } catch (error) {
@@ -326,10 +337,14 @@
         // Ensure Clerk JS is initialized
         await window.Clerk.load();
 
-        // Start Google OAuth sign-in using Clerk
+        // Start Google OAuth sign-in using Clerk, preserving redirect target if present
+        const redirectUrl = hasRedirectParam && redirectTarget
+          ? `dashboard2.html?redirect=${encodeURIComponent(redirectTarget)}`
+          : 'dashboard2.html';
+
         await window.Clerk.redirectToSignIn({
           strategy: 'oauth_google',
-          redirectUrl: 'dashboard2.html',
+          redirectUrl,
         });
       } catch (error) {
         console.error('Clerk Google sign-in error:', error);

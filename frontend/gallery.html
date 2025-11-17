@@ -36,7 +36,7 @@
       <div class="card" style="margin-bottom:1rem;">
         <div class="card-body">
           <h2>Add a memory</h2>
-          <p class="muted">Paste an image URL and a short description for this event. Items are stored only in your browser (local device).</p>
+          <p class="muted">Paste an image URL and a short description for this event. Items are now stored securely in your EventNest workspace (MongoDB).</p>
           <form id="gallery-form" class="login-form" novalidate>
             <div class="field">
               <label for="g-event">Event name</label>
@@ -71,6 +71,8 @@
 
   <script>
     (function(){
+      const API_BASE = 'http://localhost:4000/api';
+
       const params = new URLSearchParams(window.location.search);
       const eventFromQuery = params.get('event') || '';
       const titleEl = document.getElementById('gallery-title');
@@ -80,26 +82,10 @@
       const grid = document.getElementById('gallery-grid');
       const emptyEl = document.getElementById('gallery-empty');
 
-      const STORAGE_KEY = 'eventnest_gallery_items';
-
-      function loadItems(){
-        try{
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if(!raw) return [];
-          const parsed = JSON.parse(raw);
-          return Array.isArray(parsed) ? parsed : [];
-        }catch(e){ return []; }
-      }
-
-      function saveItems(items){
-        try{
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-        }catch(e){ console.error('Failed to save gallery items', e); }
-      }
-
-      function render(){
-        const items = loadItems();
-        const filtered = eventFromQuery ? items.filter(it => (it.event||'').toLowerCase() === eventFromQuery.toLowerCase()) : items;
+      function renderItems(items){
+        const filtered = eventFromQuery
+          ? items.filter(it => (it.event || '').toLowerCase() === eventFromQuery.toLowerCase())
+          : items;
 
         if(!filtered.length){
           grid.innerHTML = '';
@@ -126,13 +112,26 @@
         }).join('');
       }
 
+      async function loadFromApi(){
+        try{
+          const res = await fetch(`${API_BASE}/gallery`);
+          const data = await res.json();
+          const items = Array.isArray(data.items) ? data.items : [];
+          renderItems(items);
+        }catch(e){
+          console.error('Failed to load gallery items:', e);
+          grid.innerHTML = '';
+          emptyEl.style.display = 'block';
+        }
+      }
+
       if(eventFromQuery){
         titleEl.textContent = eventFromQuery + ' • Gallery';
         subtitleEl.textContent = 'Memories and moments from ' + eventFromQuery + '.';
         eventInput.value = eventFromQuery;
       }
 
-      form.addEventListener('submit', function(e){
+      form.addEventListener('submit', async function(e){
         e.preventDefault();
         const event = eventInput.value.trim();
         const image = document.getElementById('g-image').value.trim();
@@ -144,22 +143,28 @@
           return;
         }
 
-        const items = loadItems();
-        items.unshift({
-          id: Date.now(),
-          event,
-          image,
-          description,
-          author,
-          createdAt: new Date().toISOString()
-        });
-        saveItems(items);
-        form.reset();
-        if(eventFromQuery){ eventInput.value = eventFromQuery; }
-        render();
+        try{
+          const res = await fetch(`${API_BASE}/gallery`,{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ event, image, description, author })
+          });
+          const data = await res.json();
+          if(!res.ok){
+            const msg = data && data.message ? data.message : 'Failed to save gallery item';
+            alert(msg);
+            return;
+          }
+          form.reset();
+          if(eventFromQuery){ eventInput.value = eventFromQuery; }
+          await loadFromApi();
+        }catch(err){
+          console.error('Save gallery item error:', err);
+          alert('Network error while saving gallery item. Please try again.');
+        }
       });
 
-      render();
+      loadFromApi();
     })();
   </script>
 </body>
