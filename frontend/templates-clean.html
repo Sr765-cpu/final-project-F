@@ -548,6 +548,51 @@
     document.addEventListener('DOMContentLoaded', () => {
       let templates = [];
       const templatesList = document.getElementById('templates-list');
+      const createBtn = document.getElementById('create-template-btn');
+      const createModal = document.getElementById('create-template-modal');
+      const createCardForm = document.getElementById('create-template-card-form');
+
+      function openCreateModal() {
+        if (!createModal) return;
+        createModal.classList.add('show');
+        createModal.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeCreateModal() {
+        if (!createModal) return;
+        createModal.classList.remove('show');
+        createModal.setAttribute('aria-hidden', 'true');
+        const titleEl = document.getElementById('ct-title');
+        if (titleEl) titleEl.textContent = 'Create New Template';
+        if (createCardForm) {
+          createCardForm.reset();
+          delete createCardForm.dataset.editId;
+        }
+      }
+
+      if (createBtn) {
+        createBtn.addEventListener('click', () => {
+          openCreateModal();
+        });
+      }
+
+      if (createModal) {
+        createModal.addEventListener('click', (e) => {
+          const target = e.target;
+          if (
+            target.matches('[data-close]') ||
+            target.classList.contains('modal-backdrop')
+          ) {
+            closeCreateModal();
+          }
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && createModal.classList.contains('show')) {
+            closeCreateModal();
+          }
+        });
+      }
 
       // Render templates
       function renderTemplates(templatesToRender = templates) {
@@ -704,6 +749,87 @@
         
         renderTemplates(sortedTemplates);
       });
+
+      if (createCardForm) {
+        createCardForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          const titleEl = document.getElementById('ct-title-input');
+          const descEl = document.getElementById('ct-desc');
+          const catEl = document.getElementById('ct-category');
+          const dateEl = document.getElementById('ct-date');
+          const locEl = document.getElementById('ct-location');
+          const orgEl = document.getElementById('ct-organizer');
+          const imgEl = document.getElementById('ct-image');
+
+          const title = titleEl ? titleEl.value.trim() : '';
+          const description = descEl ? descEl.value.trim() : '';
+          const category = catEl ? catEl.value : '';
+          const dateValue = dateEl ? dateEl.value : '';
+          const location = locEl ? locEl.value.trim() : '';
+          const organizer = orgEl ? orgEl.value.trim() : '';
+          const image = imgEl ? imgEl.value.trim() : '';
+
+          if (!title || !description || !category || !dateValue || !location || !organizer) {
+            alert('Please fill all required fields.');
+            return;
+          }
+
+          let datetime = dateValue;
+          try {
+            const d = new Date(dateValue);
+            if (!Number.isNaN(d.getTime())) {
+              datetime = d.toISOString();
+            }
+          } catch (err) {}
+
+          const payload = {
+            title,
+            description,
+            category,
+            location,
+            organizer,
+            datetime,
+            images: image ? [image] : []
+          };
+
+          const editingId = createCardForm.dataset.editId;
+          const method = editingId ? 'PUT' : 'POST';
+          const url = editingId
+            ? `${API_BASE}/templates/${editingId}`
+            : `${API_BASE}/templates`;
+
+          try {
+            const res = await fetch(url, {
+              method,
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok) {
+              throw new Error(data.message || 'Failed to save template');
+            }
+
+            if (editingId) {
+              const idx = templates.findIndex(t => t.id === editingId);
+              if (idx !== -1) {
+                templates[idx] = data.template || data;
+              }
+            } else {
+              const newTemplate = data.template || data;
+              if (newTemplate) {
+                templates.unshift(newTemplate);
+              }
+            }
+
+            renderTemplates();
+            closeCreateModal();
+          } catch (err) {
+            console.error('Failed to save template', err);
+            alert(err.message || 'Failed to save template. Please try again.');
+          }
+        });
+      }
 
       // Initial load
       loadTemplates();
